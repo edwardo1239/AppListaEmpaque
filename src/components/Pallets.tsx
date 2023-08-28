@@ -10,78 +10,98 @@ import {
 
 import SettingPalletLimon from '../modals/SettingPalletLimon';
 import SettingPalletNaranja from '../modals/SettingPalletNaranja';
+import { LoteType, contenedorType } from '../store/types';
+import { useContenedoresStore } from '../store/Contenedores';
+import { useLoteStore } from '../store/Predios';
+import SettingsCajasSinPalletLimon from '../modals/SettingsCajasSinPalletLimon';
+import SettingsCajasSinPalletNaranja from '../modals/SettingsCajasSinPalletNaranja';
 
-interface contenedoresObj {
-  [key: string]: contenedoresObj;
-}
 
-type palletProps = {
-  numeroContenedor: string;
-  obtenerPallet: (pallet: string) => void;
-  contenedores: any;
-  configurarContenedor: (contenedores: contenedoresObj) => void;
-  loteActual: any;
-  obtenerSeleccionInformacion: (e:string) => void
-  pallet:string
-};
 
-export default function Pallets(props: palletProps) {
- 
+export default function Pallets() {
+
+  const setPallet = useContenedoresStore(state => state.setPallet);
+  const setContenedores = useContenedoresStore(state => state.setContenedores)
+  const contenedores = useContenedoresStore(state => state.contenedores);
+  const numeroContenedor = useContenedoresStore(state => state.numeroContenedor);
+  const pallet = useContenedoresStore(state => state.pallet)
+  const setSeleccion = useContenedoresStore(state => state.setSeleccion)
+  const loteActual = useLoteStore(state => state.loteActual)
+  
   const [openModal, setOpenModal] = useState<boolean>(false);
+  const [openModalSinPallet, setOpenModalSinPallet] = useState<boolean>(false);
+  const [sinPallet, setSinPallet] = useState<string>('0')
 
   const palletPress = (e: string) => {
 
     //console.log(props.contenedores[props.numeroContenedor][pallet]);
-    props.obtenerPallet(e);
-    props.obtenerSeleccionInformacion('')
+    setPallet(e);
+    setSeleccion('')
+    setSinPallet('0')
   };
+
+  const sinPalletPress = () => {
+    setPallet('0')
+    setSeleccion('')
+    setSinPallet('sinPallet')
+  }
 
   const openPalletSettings = (e: string) => {
     setOpenModal(true);
-    props.obtenerPallet(e);
+    setPallet(e);
+    setSinPallet('0')
+  };
+
+  const openSinPalletSettings = () => {
+    setOpenModalSinPallet(true);
+    setPallet('0');
+    setSinPallet('sinPallet');
   };
 
   const closeModal = (e: boolean): void => {
     setOpenModal(e);
   };
+const closeModalSinPallet = (e:boolean) :void => {
+  setOpenModalSinPallet(e);
+}
 
   const guardarSettings = (
     radioButtonTipoCaja: string,
     radioButtonCalidad: number,
     radioButtonCalibre: number,
   ): void => {
-    let contenedoresTemp = props.contenedores;
-    if (!contenedoresTemp[props.numeroContenedor].hasOwnProperty('settings')) {
-      contenedoresTemp[props.numeroContenedor][props.pallet]['settings'] = {};
+    let contenedoresTemp:any = contenedores;
+    if (!contenedoresTemp[numeroContenedor].hasOwnProperty('settings')) {
+      contenedoresTemp[numeroContenedor][pallet]['settings'] = {};
     }
-    contenedoresTemp[props.numeroContenedor][props.pallet]['settings']['tipoCaja'] =
+    contenedoresTemp[numeroContenedor][pallet]['settings']['tipoCaja'] =
       radioButtonTipoCaja;
-    contenedoresTemp[props.numeroContenedor][props.pallet]['settings']['calidad'] =
+    contenedoresTemp[numeroContenedor][pallet]['settings']['calidad'] =
       radioButtonCalidad;
-    contenedoresTemp[props.numeroContenedor][props.pallet]['settings']['calibre'] =
+    contenedoresTemp[numeroContenedor][pallet]['settings']['calibre'] =
       radioButtonCalibre;
 
     //console.log(contenedoresTemp);
-    props.configurarContenedor(contenedoresTemp);
+    setContenedores(contenedoresTemp);
     setOpenModal(false);
   };
 
   return (
     <View style={styles.container}>
-      {props.numeroContenedor !== '0' &&
-        Object.keys(props.contenedores[props.numeroContenedor]).map(
+      {numeroContenedor !== '0' &&
+        Object.keys(contenedores[numeroContenedor]).map(
           item =>
             item !== 'nombreCliente' && (
               <View style={styles.palletContainer} key={'view' + item}>
                 <TouchableOpacity
-                  key={'button' + item}
-                  style={
-                    props.pallet !== '0'  && props.pallet == item
-                      ? styles.palletsPress
-                      : styles.palletsButons
-                  }
-                  onPress={() => palletPress(item)}
-                  onLongPress={() => openPalletSettings(item)}>
+                 style={
+                  pallet !== '0'  && pallet == item
+                    ? styles.palletsPress
+                    : styles.palletsButons
+                }
+                 onPress={() => palletPress(item)}
+                 onLongPress={() => openPalletSettings(item)}
+                 >
                   <View
                     style={{
                       display: 'flex',
@@ -95,20 +115,20 @@ export default function Pallets(props: palletProps) {
                       style={styles.image}
                     />
                     <Text style={{fontSize: 20}}>
-                      {props.contenedores[props.numeroContenedor][
+                      {contenedores[numeroContenedor][
                         item
                       ].hasOwnProperty('settings') &&
-                        props.contenedores[props.numeroContenedor][item][
+                        contenedores[numeroContenedor][item][
                           'settings'
                         ]['calibre']}
                     </Text>
                   </View>
                   <View style={{marginLeft: 25}}>
                     <Text style={{fontSize: 50, fontWeight: 'bold'}}>
-                      {props.contenedores[props.numeroContenedor][
+                      {contenedores[numeroContenedor][
                         item
                       ].hasOwnProperty('cajasTotal') &&
-                        props.contenedores[props.numeroContenedor][item][
+                        contenedores[numeroContenedor][item][
                           'cajasTotal'
                         ]}
                     </Text>
@@ -123,12 +143,12 @@ export default function Pallets(props: palletProps) {
 
         <View style={styles.palletContainer}>
           <TouchableOpacity     style={
-                    props.pallet !== '0' &&  props.pallet === 'sinPallet'  
+                    sinPallet !== '0' &&  sinPallet === 'sinPallet'  
                       ? styles.palletsPress
                       : styles.palletsButons
                   }
-                  onPress={() => palletPress('sinPallet')}
-                  onLongPress={() => openPalletSettings('sinPallet')}>
+                  onPress={() => sinPalletPress()}
+                  onLongPress={() => openSinPalletSettings()}>
                   <Text>Cajas Sin Pallet</Text>
 
 
@@ -136,22 +156,31 @@ export default function Pallets(props: palletProps) {
         </View>
 
 
-      {props.loteActual.tipoFurta === 'Limon' ? (
+       {loteActual.tipoFruta === 'Limon' ? (
         <SettingPalletLimon
           openModal={openModal}
-          pallet={props.pallet}
-          guardarSettings={guardarSettings}
           closeModal={closeModal}
+          guardarSettings={guardarSettings}
         />
       ) : (
      
         <SettingPalletNaranja
           openModal={openModal}
-          pallet={props.pallet}
           guardarSettings={guardarSettings}
           closeModal={closeModal}
         />
-      )}
+      )} 
+
+        {loteActual.tipoFruta === 'Limon' ? (
+          <SettingsCajasSinPalletLimon 
+            openModalSinPallet={openModalSinPallet}
+            closeModalSinPallet={closeModalSinPallet} />)
+            : (
+              <SettingsCajasSinPalletNaranja 
+              openModalSinPallet={openModalSinPallet}
+              closeModalSinPallet={closeModalSinPallet} />)
+}
+
     </View>
   );
 }

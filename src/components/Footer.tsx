@@ -10,28 +10,21 @@ import {
 } from 'react-native';
 import actualizarPallet from '../utils/actualizarPallet';
 import eliminarCajas from '../utils/eliminarCajas';
+import { useContenedoresStore } from '../store/Contenedores';
+import { useLoteStore } from '../store/Predios';
 
-interface contenedoresObj {
-  [key: string]: contenedoresObj;
-}
 
-type loteType = {
-  enf: string;
-  nombreLote: string;
-  tipoFruta: 'Naranja' | 'Limon';
-};
 
-type footerInfo = {
-  numeroContenedor: string;
-  pallet: string;
-  configurarContenedor: (contenedores: contenedoresObj) => void;
-  contenedores: any;
-  loteActual: loteType;
-  inforamcionSeleccion: string;
-  obtenerSeleccionInformacion: (e: string) => void;
-};
+export default function Footer() {
 
-export default function Footer(props: footerInfo) {
+  const contenedores = useContenedoresStore(state => state.contenedores);
+  const setContenedores = useContenedoresStore(state => state.setContenedores)
+  const numeroContenedor = useContenedoresStore(state => state.numeroContenedor);
+  const pallet = useContenedoresStore(state => state.pallet);
+  const seleccionado = useContenedoresStore(state => state.seleccion);
+  const loteActual = useLoteStore(state => state.loteActual);
+  const loteVaciando = useLoteStore(state => state.loteVaciando);
+
   const [entrada, setEntrada] = useState<string>('');
 
   const getInput = (
@@ -41,7 +34,7 @@ export default function Footer(props: footerInfo) {
   };
 
   const clickActualizarPallet = () => {
-    console.log(props.contenedores[props.numeroContenedor][props.pallet]);
+    //console.log(contenedores[numeroContenedor][pallet]);
 
     // let newContenedor = props.contenedores;
     // newContenedor[props.numeroContenedor][props.pallet]['cajasTotal'] = 0
@@ -49,53 +42,57 @@ export default function Footer(props: footerInfo) {
     // props.configurarContenedor(newContenedor);
     // console.log(newContenedor[props.numeroContenedor][props.pallet])
 
-    if (!(entrada === '')) {
-      if (
-        props.contenedores[props.numeroContenedor][props.pallet].hasOwnProperty(
-          'settings',
-        )
-      ) {
-        if (props.loteActual.enf !== '') {
-          let newContenedor = actualizarPallet(
-            props.contenedores,
-            props.numeroContenedor,
-            props.pallet,
-            props.loteActual,
-            entrada,
-          );
-          if (newContenedor === 'Error en el numero de cajas')
-            Alert.alert(newContenedor);
-          else {
-            setEntrada('');
-            Alert.alert('Guardado con exito');
-            props.configurarContenedor(newContenedor);
-          }
-        } else {
-          Alert.alert('No ha obtenido el lote');
-        }
-      } else {
-        Alert.alert('Configure el pallet');
-      }
-    } else Alert.alert('ingrese el numero de cajas');
+    if (!(entrada === '' )) {
+      if(!(pallet === '0')){
+        if (
+          contenedores[numeroContenedor][pallet].hasOwnProperty(
+            'settings',
+          )
+        ) {
+          if (loteActual.enf !== '') {
+            let newContenedor = actualizarPallet(
+              contenedores,
+              numeroContenedor,
+              pallet,
+              loteActual,
+              entrada,
+            );
+            if (newContenedor === 'Error en el numero de cajas')
+              Alert.alert(newContenedor);
+            else {
+              setContenedores(newContenedor)
+              setEntrada('');
+              Alert.alert('Guardado con exito');
+            }
+          } else Alert.alert('No ha obtenido el lote');
+          
+        } else Alert.alert('Configure el pallet');
+        
+      } else Alert.alert("Error, no se puede actualizar las cajas sin pallet")
+     
+    } else Alert.alert('Error ingrese el numero de cajas ');
   };
 
   const clickEliminar = () => {
-    if (props.inforamcionSeleccion !== '') {
+    if (seleccionado !== '') {
       let newContenedor = eliminarCajas(
-        props.contenedores,
-        props.numeroContenedor,
-        props.pallet,
-        props.inforamcionSeleccion,
-        props.loteActual,
+        contenedores,
+        numeroContenedor,
+        pallet,
+        seleccionado,
+        loteActual,
+        loteVaciando
       );
       if (newContenedor === 'Error')
         Alert.alert(
           'No se puede eliminar ese item debido a que es de un lote pasado',
         );
       else {
+        setContenedores(newContenedor)
+        Alert.alert("Eliminado con exito")
         //console.log(newContenedor)
-        props.configurarContenedor(newContenedor);
-        props.obtenerSeleccionInformacion('');
+        // props.configurarContenedor(newContenedor);
+        // props.obtenerSeleccionInformacion('');
       }
     } else {
       Alert.alert('No ha seleccionado las cajas que desea eliminar');

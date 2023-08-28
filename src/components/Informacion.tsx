@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -6,45 +6,33 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-interface contenedoresObj {
-  [key: string]: contenedoresObj;
-}
-
-type loteType = {
-  enf: string;
-  nombreLote: string;
-  tipoFruta: 'Naranja' | 'Limon';
-};
-
-type infoType = {
-  numeroContenedor: string;
-  pallet: string;
-  configurarContenedor: (contenedores: contenedoresObj) => void;
-  contenedores: any;
-  loteActual: loteType;
-  obtenerSeleccionInformacion: (e:string) => void
-  inforamcionSeleccion:string
-};
-
-function Informacion(props: infoType) {
+import { useContenedoresStore } from '../store/Contenedores';
 
 
-  const selectItem = (e:string) => {
+function Informacion() {
 
-    props.obtenerSeleccionInformacion(e);
-  }
+const contenedores = useContenedoresStore(state => state.contenedores)
+const numeroContenedor = useContenedoresStore(state => state.numeroContenedor)
+const pallet = useContenedoresStore(state => state.pallet)
+const setSeleccion = useContenedoresStore(state => state.setSeleccion)
+const seleccion = useContenedoresStore(state => state.seleccion)
 
   return (
-    <ScrollView style={styles.scrollStyle}>
-      {props.pallet !== '0' &&
+    <>
+    {pallet == 'sinPallet' ? 
+      <ScrollView style={styles.scrollStyle}>
+        <Text>Hola caja sin pallet</Text>
+      </ScrollView>
+      :
+      <ScrollView style={styles.scrollStyle}>
+      {pallet !== '0'  &&
         Object.keys(
-          props.contenedores[props.numeroContenedor][props.pallet],
+          contenedores[numeroContenedor][pallet],
         ).map(
           item =>
             item !== 'settings' &&
             item !== 'cajasTotal' &&
-            props.contenedores[props.numeroContenedor][props.pallet][item].length > 0 &&
+            contenedores[numeroContenedor][pallet][item].length > 0 &&
              (
               
                 <View style={styles.container} key={item+'view1'}>
@@ -56,14 +44,14 @@ function Informacion(props: infoType) {
                       <View style={{display:'flex',flexDirection:'row'}} key={item+'view4'}>
                         <Text key={item + 'nombrPredioHeader'} style={styles.textHeaders}>Nombre Predio: </Text>
                         <Text key={item + 'nombrPredio'} style={styles.textHeaders}>
-                          {props.contenedores[props.numeroContenedor][props.pallet][item][0][0]}
+                          {contenedores[numeroContenedor][pallet][item][0][0]}
                         </Text> 
                       </View>
                     </View>
                   </View>
                   
-                  {props.contenedores[props.numeroContenedor][props.pallet][item].map((elementoActual:any, index:number )=> (
-                    <TouchableOpacity key={elementoActual +'touchable'} style={(props.inforamcionSeleccion == item+'/'+index) ? styles.touchablePress : styles.touchable} onPress={() => selectItem(item+'/'+index)}>
+                  {contenedores[numeroContenedor][pallet][item].map((elementoActual:any, index:number )=> (
+                    <TouchableOpacity key={elementoActual +'touchable'} style={(seleccion == item+'/'+index) ? styles.touchablePress : styles.touchable}  onPress={() => setSeleccion(item+"/"+index)}>
                       <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view1'}>
                         <Text>No. Cajas:  </Text>
                         <Text key={elementoActual + item + 'noCajas'}>{elementoActual[1]}</Text>
@@ -89,6 +77,9 @@ function Informacion(props: infoType) {
             ),
         )}
     </ScrollView>
+      }
+   
+  </>
   );
 }
 

@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
 import { View, Modal, Text, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native'
+import { useContenedoresStore } from '../store/Contenedores'
 
 type modalLimonTypes = {
     openModal: boolean
-    pallet: string
     guardarSettings: (radioButtonTipoCaja:string, radioButtonCalidad:number, radioButtonCalibre:number) => void
     closeModal: (e:boolean) => void
 }
 
 export default function SettingPalletLimon(props:modalLimonTypes) {
+
+    const pallet = useContenedoresStore(state => state.pallet)
 
     const [radioButtonTipoCaja, setRadioButtonTipoCaja] = useState<string>('');
     const [radioButtonCalidad, setRadioButtonCalidad] = useState<number>(0);
@@ -44,7 +46,7 @@ export default function SettingPalletLimon(props:modalLimonTypes) {
       <View style={styles.viewModal}>
         <View style={styles.modal}>
           <Text style={styles.tituloModal}>
-            Configurar Pallet {props.pallet}
+            Configurar Pallet {pallet}
           </Text>
           <View style={styles.containerConfigurarPallet}>
             <Text>Tipo de caja</Text>

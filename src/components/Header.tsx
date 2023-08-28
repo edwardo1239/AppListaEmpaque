@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -12,37 +12,32 @@ import {
   FlatList,
   Switch,
 } from 'react-native';
+import { useContenedoresStore } from '../store/Contenedores'; 
+import { useLoteStore } from '../store/Predios';
 
-interface contenedoresObj {
-  [key: string]: contenedoresObj;
-}
 
-type loteType = {
-  enf: string,
-  nombreLote: string,
-  tipoFruta: "Naranja" | "Limon",
-}
-
-type typoObtenerContenedor = {
-  obtenerContenedor: (numero: string) => void;
-  contenedores: any;
-  predio: loteType;
-  settingLoteActual: (predio: loteType) => void;
-};
-
-export default function Header(props: typoObtenerContenedor): JSX.Element {
+export default function Header(): JSX.Element {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [cliente, setCliente] = useState<string>('Contenedores');
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [loteActualHeader, setLoteActualHeader] = useState<string>('');
-  const [numeroContenedor, setNumeroContenedor] = useState<string>('')
-  const toggleSwitch = (): void =>
-    setIsEnabled(previousState => !previousState);
 
-  const obtenerLoteActual = () => {
-    props.settingLoteActual(props.predio);
-    setLoteActualHeader(props.predio.enf + '  ' + props.predio.nombreLote);
-  };
+
+  const contenedores = useContenedoresStore(state => state.contenedores);
+  const setNumeroContenedor = useContenedoresStore(state => state.setNumeroContenedor);
+  const loteVaciando = useLoteStore(state => state.loteVaciando);
+  const setLoteActual = useLoteStore(state => state.setLoteActual);
+  const loteActual = useLoteStore(state => state.loteActual)
+  const numeroContenedor = useContenedoresStore(state => state.numeroContenedor)
+  
+  // const toggleSwitch = (): void =>
+  //   setIsEnabled(previousState => !previousState);
+
+  // const obtenerLoteActual = () => {
+  //   props.settingLoteActual(props.predio);
+  //   setLoteActualHeader(props.predio.enf + '  ' + props.predio.nombreLote);
+  // };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,37 +50,37 @@ export default function Header(props: typoObtenerContenedor): JSX.Element {
 
       <View>
         <Text>Predio Vaciando:</Text>
-        <Text>{props.predio.enf + '  ' + props.predio.nombreLote}</Text>
+        <Text>{loteVaciando.enf + '  ' + loteVaciando.nombreLote}</Text>
       </View>
-
+ 
       <View>
         <Text>Predio Actual:</Text>
-        <Text>{loteActualHeader}</Text>
+        <Text>{loteActual.enf + '  ' + loteActual.nombreLote}</Text>
       </View>
 
-      <View>
+      { <View>
         <Text>Cajas Total:</Text>
-        <Text>{ props.contenedores[numeroContenedor]
+        <Text>{ contenedores[numeroContenedor]
         &&
-        Object.keys(props.contenedores[numeroContenedor]).reduce((acu:number, item:any) => {
+        Object.keys(contenedores[numeroContenedor]).reduce((acu:number, item:any) => {
           if(item === 'config' || item === 'nombreCliente'){}
           else
            {
            
-            if(props.contenedores[numeroContenedor][item].hasOwnProperty('cajasTotal')){
+            if(contenedores[numeroContenedor][item].hasOwnProperty('cajasTotal')){
 
-              acu += (props.contenedores[numeroContenedor][item]['cajasTotal'])
+              acu += (contenedores[numeroContenedor][item]['cajasTotal'])
             }
             
           }
           
           return acu
         }, 0)}</Text>
-      </View>
+      </View> }
 
       <TouchableOpacity
         style={styles.buttonContenedores}
-        onPress={obtenerLoteActual}>
+        onPress={() => setLoteActual(loteVaciando)}>
         <Text>Obtener Lote</Text>
       </TouchableOpacity>
 
@@ -99,21 +94,21 @@ export default function Header(props: typoObtenerContenedor): JSX.Element {
         <View style={styles.centerModal}>
           <View style={styles.viewModal}>
             <FlatList
-              data={Object.keys(props.contenedores)}
+              data={Object.keys(contenedores)}
               style={styles.pressableStyle}
               renderItem={({item}) => (
                 <TouchableOpacity
                   onPress={() => {
                     setCliente(
-                      item + '-' + props.contenedores[item]['nombreCliente'],
+                      item + '-' + contenedores[item]['nombreCliente'],
                     );
-                    props.obtenerContenedor(item);
-                    setNumeroContenedor(item)
+                    // props.obtenerContenedor(item);
+                    setNumeroContenedor(item);
                     setModalVisible(false);
                   }}>
                   {item != 'config' && (
                     <Text style={styles.textList}>
-                      {item + '-' + props.contenedores[item]['nombreCliente']}
+                      {item + '-' + contenedores[item]['nombreCliente']}
                     </Text>
                   )}
                 </TouchableOpacity>
