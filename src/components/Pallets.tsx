@@ -1,76 +1,67 @@
 import React, {useState} from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-
-} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, Image} from 'react-native';
 
 import SettingPalletLimon from '../modals/SettingPalletLimon';
 import SettingPalletNaranja from '../modals/SettingPalletNaranja';
-import { LoteType, contenedorType } from '../store/types';
-import { useContenedoresStore } from '../store/Contenedores';
-import { useLoteStore } from '../store/Predios';
+
+import {useContenedoresStore} from '../store/Contenedores';
+import {useLoteStore} from '../store/Predios';
 import SettingsCajasSinPalletLimon from '../modals/SettingsCajasSinPalletLimon';
 import SettingsCajasSinPalletNaranja from '../modals/SettingsCajasSinPalletNaranja';
-
-
+import {useCajasSinPalletStore} from '../store/Cajas';
 
 export default function Pallets() {
-
   const setPallet = useContenedoresStore(state => state.setPallet);
-  const setContenedores = useContenedoresStore(state => state.setContenedores)
+  const setContenedores = useContenedoresStore(state => state.setContenedores);
   const contenedores = useContenedoresStore(state => state.contenedores);
-  const numeroContenedor = useContenedoresStore(state => state.numeroContenedor);
-  const pallet = useContenedoresStore(state => state.pallet)
-  const setSeleccion = useContenedoresStore(state => state.setSeleccion)
-  const loteActual = useLoteStore(state => state.loteActual)
-  
+  const numeroContenedor = useContenedoresStore(
+    state => state.numeroContenedor,
+  );
+  const pallet = useContenedoresStore(state => state.pallet);
+  const setSeleccion = useContenedoresStore(state => state.setSeleccion);
+  const loteActual = useLoteStore(state => state.loteActual);
+
+  const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet);
+
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [openModalSinPallet, setOpenModalSinPallet] = useState<boolean>(false);
-  const [sinPallet, setSinPallet] = useState<string>('0')
+  // const [sinPallet, setSinPallet] = useState<string>('0')
 
   const palletPress = (e: string) => {
-
     //console.log(props.contenedores[props.numeroContenedor][pallet]);
     setPallet(e);
-    setSeleccion('')
-    setSinPallet('0')
+    setSeleccion('');
   };
 
-  const sinPalletPress = () => {
-    setPallet('0')
-    setSeleccion('')
-    setSinPallet('sinPallet')
-  }
+  const sinPalletPress = (e: string) => {
+    setPallet('sinPallet');
+    setSeleccion('');
+  };
 
   const openPalletSettings = (e: string) => {
     setOpenModal(true);
     setPallet(e);
-    setSinPallet('0')
   };
 
   const openSinPalletSettings = () => {
     setOpenModalSinPallet(true);
-    setPallet('0');
-    setSinPallet('sinPallet');
+    setPallet('sinPallet');
+    //setSinPallet('sinPallet');
   };
 
   const closeModal = (e: boolean): void => {
     setOpenModal(e);
   };
-const closeModalSinPallet = (e:boolean) :void => {
-  setOpenModalSinPallet(e);
-}
+  const closeModalSinPallet = (e: boolean): void => {
+    setOpenModalSinPallet(e);
+  };
 
   const guardarSettings = (
     radioButtonTipoCaja: string,
     radioButtonCalidad: number,
     radioButtonCalibre: number,
   ): void => {
-    let contenedoresTemp:any = contenedores;
+    let contenedoresTemp: any = contenedores;
     if (!contenedoresTemp[numeroContenedor].hasOwnProperty('settings')) {
       contenedoresTemp[numeroContenedor][pallet]['settings'] = {};
     }
@@ -94,14 +85,13 @@ const closeModalSinPallet = (e:boolean) :void => {
             item !== 'nombreCliente' && (
               <View style={styles.palletContainer} key={'view' + item}>
                 <TouchableOpacity
-                 style={
-                  pallet !== '0'  && pallet == item
-                    ? styles.palletsPress
-                    : styles.palletsButons
-                }
-                 onPress={() => palletPress(item)}
-                 onLongPress={() => openPalletSettings(item)}
-                 >
+                  style={
+                    pallet !== '0' && pallet == item
+                      ? styles.palletsPress
+                      : styles.palletsButons
+                  }
+                  onPress={() => palletPress(item)}
+                  onLongPress={() => openPalletSettings(item)}>
                   <View
                     style={{
                       display: 'flex',
@@ -115,22 +105,19 @@ const closeModalSinPallet = (e:boolean) :void => {
                       style={styles.image}
                     />
                     <Text style={{fontSize: 20}}>
-                      {contenedores[numeroContenedor][
-                        item
-                      ].hasOwnProperty('settings') &&
-                        contenedores[numeroContenedor][item][
-                          'settings'
-                        ]['calibre']}
+                      {contenedores[numeroContenedor][item].hasOwnProperty(
+                        'settings',
+                      ) &&
+                        contenedores[numeroContenedor][item]['settings'][
+                          'calibre'
+                        ]}
                     </Text>
                   </View>
                   <View style={{marginLeft: 25}}>
                     <Text style={{fontSize: 50, fontWeight: 'bold'}}>
-                      {contenedores[numeroContenedor][
-                        item
-                      ].hasOwnProperty('cajasTotal') &&
-                        contenedores[numeroContenedor][item][
-                          'cajasTotal'
-                        ]}
+                      {contenedores[numeroContenedor][item].hasOwnProperty(
+                        'cajasTotal',
+                      ) && contenedores[numeroContenedor][item]['cajasTotal']}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -141,46 +128,57 @@ const closeModalSinPallet = (e:boolean) :void => {
             ),
         )}
 
-        <View style={styles.palletContainer}>
-          <TouchableOpacity     style={
-                    sinPallet !== '0' &&  sinPallet === 'sinPallet'  
-                      ? styles.palletsPress
-                      : styles.palletsButons
-                  }
-                  onPress={() => sinPalletPress()}
-                  onLongPress={() => openSinPalletSettings()}>
-                  <Text>Cajas Sin Pallet</Text>
+      <View style={styles.palletContainer}>
+        <TouchableOpacity
+          style={
+            pallet !== '0' && pallet === 'sinPallet'
+              ? styles.palletsPress
+              : styles.palletsButons
+          }
+          onPress={() => palletPress('sinPallet')}
+          onLongPress={() => openSinPalletSettings()}>
+          <Text style={{marginLeft: 8, fontWeight: '500'}}>
+            Cajas Sin Pallet
+          </Text>
+          <Text style={{fontSize:40,fontWeight:'bold',marginLeft:10}}>
+            {Object.keys(cajasSinPallet).reduce(
+              (acu1, item1) =>
+                acu1 +
+                cajasSinPallet[item1].reduce(
+                  (acu2: number, item2: number[]) => acu2 + item2[1],
+                  0,
+                ),
+              0,
+            )}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-
-          </TouchableOpacity>
-        </View>
-
-
-       {loteActual.tipoFruta === 'Limon' ? (
+      {loteActual.tipoFruta === 'Limon' ? (
         <SettingPalletLimon
           openModal={openModal}
           closeModal={closeModal}
           guardarSettings={guardarSettings}
         />
       ) : (
-     
         <SettingPalletNaranja
           openModal={openModal}
           guardarSettings={guardarSettings}
           closeModal={closeModal}
         />
-      )} 
+      )}
 
-        {loteActual.tipoFruta === 'Limon' ? (
-          <SettingsCajasSinPalletLimon 
-            openModalSinPallet={openModalSinPallet}
-            closeModalSinPallet={closeModalSinPallet} />)
-            : (
-              <SettingsCajasSinPalletNaranja 
-              openModalSinPallet={openModalSinPallet}
-              closeModalSinPallet={closeModalSinPallet} />)
-}
-
+      {loteActual.tipoFruta === 'Limon' ? (
+        <SettingsCajasSinPalletLimon
+          openModalSinPallet={openModalSinPallet}
+          closeModalSinPallet={closeModalSinPallet}
+        />
+      ) : (
+        <SettingsCajasSinPalletNaranja
+          openModalSinPallet={openModalSinPallet}
+          closeModalSinPallet={closeModalSinPallet}
+        />
+      )}
     </View>
   );
 }
@@ -234,5 +232,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-  }
-})
+  },
+});

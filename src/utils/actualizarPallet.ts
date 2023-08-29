@@ -22,6 +22,9 @@ export default function actualizarPallet(contenedores:any, numeroContenedor:stri
         if (!contenedores[numeroContenedor][pallet].hasOwnProperty(loteActual.enf)) 
         {
           contenedores[numeroContenedor][pallet][loteActual.enf] = [];
+          
+        }
+        if(!contenedores[numeroContenedor][pallet].hasOwnProperty('cajasTotal')){
           contenedores[numeroContenedor][pallet]['cajasTotal'] = 0;
         }
         //se ingresa el total de las cajas en el pallet

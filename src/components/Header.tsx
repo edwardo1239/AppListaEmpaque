@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useContenedoresStore } from '../store/Contenedores'; 
 import { useLoteStore } from '../store/Predios';
+import { useCajasSinPalletStore } from '../store/Cajas';
 
 
 export default function Header(): JSX.Element {
@@ -29,6 +30,8 @@ export default function Header(): JSX.Element {
   const setLoteActual = useLoteStore(state => state.setLoteActual);
   const loteActual = useLoteStore(state => state.loteActual)
   const numeroContenedor = useContenedoresStore(state => state.numeroContenedor)
+  const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
+  const setPallet = useContenedoresStore(state => state.setPallet)
   
   // const toggleSwitch = (): void =>
   //   setIsEnabled(previousState => !previousState);
@@ -75,7 +78,13 @@ export default function Header(): JSX.Element {
           }
           
           return acu
-        }, 0)}</Text>
+        }, 0)
+        
+        +
+
+        Object.keys(cajasSinPallet).reduce((acu1, item1) => acu1 + cajasSinPallet[item1].reduce((acu2:number, item2:number[]) => acu2 + item2[1],0),0)
+
+        }</Text>
       </View> }
 
       <TouchableOpacity
@@ -105,6 +114,8 @@ export default function Header(): JSX.Element {
                     // props.obtenerContenedor(item);
                     setNumeroContenedor(item);
                     setModalVisible(false);
+                    setPallet('0')
+                    
                   }}>
                   {item != 'config' && (
                     <Text style={styles.textList}>

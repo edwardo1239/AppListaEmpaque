@@ -19,12 +19,16 @@ import  guardarCajasSinPallet  from '../utils/GuardarCajasSinPallet';
 type modalTypes = {
   openModalSinPallet: boolean;
   closeModalSinPallet: (e: boolean) => void;
+  
 };
 
 export default function SettingsCajasSinPallet(props: modalTypes) {
-  const pallet = useContenedoresStore(state => state.pallet);
+
   const predio = useLoteStore(state => state.loteActual);
-  const setCajasSinPallet = useCajasSinPalletStore(state => state.addCajasSinPallet);
+  const setCajasSinPallet = useCajasSinPalletStore(state => state.setCajasSinPallet);
+  const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet);
+  const pallet = useContenedoresStore(state => state.pallet)
+
 
   const [radioButtonTipoCaja, setRadioButtonTipoCaja] = useState<string>('');
   const [radioButtonCalidad, setRadioButtonCalidad] = useState<number>(0);
@@ -34,17 +38,19 @@ export default function SettingsCajasSinPallet(props: modalTypes) {
   const getInput = (
     e: NativeSyntheticEvent<TextInputChangeEventData>,
   ): void => {
-    console.log(e.nativeEvent.text)
+   //console.log(e.nativeEvent.text)
     setCajas(e.nativeEvent.text);
   };
 
   const clickGuardar = (): void => {
+    if(predio.enf === '') return Alert.alert("No ha seleccionado predio")
     if((cajas !== '')){
       if (
         !(
-          radioButtonTipoCaja == '' &&
-          radioButtonCalidad == 0 &&
-          radioButtonCalibre == 0
+          radioButtonTipoCaja == '' ||
+          radioButtonCalidad == 0 ||
+          radioButtonCalibre == 0 ||
+          predio.enf == ''
         
         )
       ) {
@@ -52,8 +58,9 @@ export default function SettingsCajasSinPallet(props: modalTypes) {
         let fecha = new Date()
         let cajasInt:number = parseInt(cajas)
         let cajasVector:any = [predio.nombreLote, cajasInt, radioButtonTipoCaja, radioButtonCalibre, radioButtonCalidad, fecha]
-  
-        let newCajasSinPallet = guardarCajasSinPallet(cajasVector, predio.enf)
+       
+        let newCajasSinPallet = guardarCajasSinPallet(cajasSinPallet, cajasVector, predio.enf)
+        setCajasSinPallet(newCajasSinPallet)
         console.log(newCajasSinPallet)
 
 

@@ -1,6 +1,20 @@
-import React, { useState } from 'react'
-import { View, Modal, Text, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native'
-import { useContenedoresStore } from '../store/Contenedores'
+import React, {useState} from 'react';
+import {
+  View,
+  Modal,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Button,
+  Alert,
+  TextInput,
+  NativeSyntheticEvent,
+  TextInputChangeEventData
+} from 'react-native';
+import {useContenedoresStore} from '../store/Contenedores';
+import { useCajasSinPalletStore } from '../store/Cajas';
+import { useLoteStore } from '../store/Predios';
+import  guardarCajasSinPallet  from '../utils/GuardarCajasSinPallet';
 
 type modalTypes = {
     openModalSinPallet: boolean
@@ -8,34 +22,56 @@ type modalTypes = {
 }
 
 export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
-    const pallet = useContenedoresStore(state => state.pallet)
 
-    const [radioButtonTipoCaja, setRadioButtonTipoCaja] = useState<string>('');
-    const [radioButtonCalidad, setRadioButtonCalidad] = useState<number>(0);
-    const [radioButtonCalibre, setRadioButtonCalibre] = useState<number>(0);
+  const predio = useLoteStore(state => state.loteActual);
+  const setCajasSinPallet = useCajasSinPalletStore(state => state.setCajasSinPallet);
+  const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet);
+  const pallet = useContenedoresStore(state => state.pallet)
 
-    const clickGuardar = ():void =>{
+  const [radioButtonTipoCaja, setRadioButtonTipoCaja] = useState<string>('');
+  const [radioButtonCalidad, setRadioButtonCalidad] = useState<number>(0);
+  const [radioButtonCalibre, setRadioButtonCalibre] = useState<number>(0);
+  const [cajas, setCajas] = useState<string>('')
 
-        if (
-            !(
-              radioButtonTipoCaja == '' &&
-              radioButtonCalidad == 0 &&
-              radioButtonCalibre == 0
-            )
-          ) {
+  const getInput = (
+    e: NativeSyntheticEvent<TextInputChangeEventData>,
+  ): void => {
+   //console.log(e.nativeEvent.text)
+    setCajas(e.nativeEvent.text);
+  };
+
+  const clickGuardar = (): void => {
+    if(predio.enf === '') return Alert.alert("No ha seleccionado predio")
+    if((cajas !== '')){
+      if (
+        !(
+          radioButtonTipoCaja == '' ||
+          radioButtonCalidad == 0 ||
+          radioButtonCalibre == 0 
+        
+        )
+      ) {
+  
+        let fecha = new Date()
+        let cajasInt:number = parseInt(cajas)
+        let cajasVector:any = [predio.nombreLote, cajasInt, radioButtonTipoCaja, radioButtonCalibre, radioButtonCalidad, fecha]
+       
+        let newCajasSinPallet = guardarCajasSinPallet(cajasSinPallet, cajasVector, predio.enf)
+        setCajasSinPallet(newCajasSinPallet)
+        console.log(newCajasSinPallet)
 
 
-        setRadioButtonTipoCaja('')
-        setRadioButtonCalidad(0)
-        setRadioButtonCalibre(0)
-        props.closeModalSinPallet(false)
-          }
-          else{
-            Alert.alert("No ha seleccionado ninguna configuracion")
-          }
-    }
-
-
+        setCajas('');
+        setRadioButtonTipoCaja('');
+        setRadioButtonCalidad(0);
+        setRadioButtonCalibre(0);
+        props.closeModalSinPallet(false);
+      } else {
+        Alert.alert('No ha seleccionado ninguna configuracion');
+      }
+    } else Alert.alert("Ingrese las cajas")
+   
+  };
     return (
         <Modal transparent={true} visible={props.openModalSinPallet} animationType="fade">
         <View style={styles.centerModal}>
@@ -201,28 +237,25 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.containerButtonsModal}>
-                <Button title="Guardar" onPress={clickGuardar} />
-                <Button title="Cancelar" onPress={() => props.closeModalSinPallet(false)}  />
-              </View>
+             
             </View>
-            <View> 
-              <View style={styles.modal}>
-                <Text style={styles.tituloModal}>Liberacion pallets</Text>
-              </View>
-              <View>
-                <TouchableOpacity>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                        {/* {radioButtonTipoCaja == 'G-30' ? (
-                            <View style={styles.radioBg}></View>
-                          ) : null} */}
-                      </View>
-                    <Text>Rotulado</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
+            <View style={styles.modalCajas}>
+            <View style={styles.modal}>
+              <Text style={styles.tituloModal}>
+                Ingresar El numero de cajas{' '}
+              </Text>
             </View>
+            <View style={{marginLeft:15,marginTop:20}}>
+              <TextInput style={styles.inputCajas} onChange={(e) => getInput(e)} keyboardType="numeric" value={cajas}></TextInput>
+            </View>
+            <View style={{display:'flex',flexDirection:'row',gap:15,marginTop:40,justifyContent:'center',marginRight:45}}>
+              <Button title="Guardar" onPress={clickGuardar} />
+              <Button
+                title="Cancelar"
+                onPress={() => props.closeModalSinPallet(false)}
+              />
+            </View>
+          </View>
           </View>
         </View>
       </Modal>
@@ -230,7 +263,6 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
     }
     
     const styles = StyleSheet.create({
-    
       centerModal: {
         flex: 1,
         alignItems: 'flex-start',
@@ -253,14 +285,17 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
       modal: {
         display: 'flex',
         flexDirection: 'column',
-        width:400,
+        width: 400,
         padding: 20,
         borderRightColor: '#999999',
-        borderRightWidth:1
+        borderRightWidth: 1,
       },
       tituloModal: {
         fontSize: 20,
         fontWeight: 'bold',
+        display:'flex',
+        justifyContent:'center',
+        marginLeft:10
       },
       containerConfigurarPallet: {
         display: 'flex',
@@ -304,5 +339,16 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
         alignContent: 'center',
         marginTop: 15,
       },
+      inputCajas: {
+        borderWidth: 1,
+        borderRadius: 15,
+        width:'80%'
+      },
+      modalCajas:{
+        display:'flex',
+        flexDirection:'column',
+        justifyContent:'center',
+        alignContent:'center'
+      }
     });
     

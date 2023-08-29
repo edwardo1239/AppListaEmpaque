@@ -7,32 +7,62 @@ import {
   TextInputChangeEventData,
   Button,
   Alert,
+  Modal,
+  Text,
 } from 'react-native';
 import actualizarPallet from '../utils/actualizarPallet';
 import eliminarCajas from '../utils/eliminarCajas';
-import { useContenedoresStore } from '../store/Contenedores';
-import { useLoteStore } from '../store/Predios';
-
+import {useContenedoresStore} from '../store/Contenedores';
+import {useLoteStore} from '../store/Predios';
+import { useCajasSinPalletStore } from '../store/Cajas';
+import eliminarCajasSinPallet from '../utils/eliminarCajasSinPallet';
+import moverCajas from '../utils/moverCajas';
+import moverCajasSinPallet from '../utils/moverCajasSinPallet';
+import { CajasSinPalletType, contenedoresObj } from '../store/types';
 
 
 export default function Footer() {
-
+  //varables del contenedor
   const contenedores = useContenedoresStore(state => state.contenedores);
-  const setContenedores = useContenedoresStore(state => state.setContenedores)
+  const setContenedores = useContenedoresStore(state => state.setContenedores);
   const numeroContenedor = useContenedoresStore(state => state.numeroContenedor);
   const pallet = useContenedoresStore(state => state.pallet);
   const seleccionado = useContenedoresStore(state => state.seleccion);
+  const setSeleccionado = useContenedoresStore(state => state.setSeleccion)
+
+  //variables de los predios
   const loteActual = useLoteStore(state => state.loteActual);
   const loteVaciando = useLoteStore(state => state.loteVaciando);
 
-  const [entrada, setEntrada] = useState<string>('');
+  //variables de las cajas sin pallet
+  const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet);
+  const setCajasSinPallet = useCajasSinPalletStore(state => state.setCajasSinPallet);
 
+  const [entrada, setEntrada] = useState<string>('');
+  const [entradaModalPallet, setEntradaModalPallet] = useState<string>('');
+  const [entradaModalCajas, setEntradaModalCajas] = useState<string>('');
+  const [openModal, setOpenModal] = useState<boolean>(false);
+
+
+  //Funcion que obtiene el dato de la entrada en el footer
   const getInput = (
     e: NativeSyntheticEvent<TextInputChangeEventData>,
   ): void => {
     setEntrada(e.nativeEvent.text);
   };
 
+  const getInputModalPallet = (
+    e: NativeSyntheticEvent<TextInputChangeEventData>,
+  ): void => {
+    setEntradaModalPallet(e.nativeEvent.text);
+  };
+
+  const getInputModalCajas = (
+    e: NativeSyntheticEvent<TextInputChangeEventData>,
+  ): void => {
+    setEntradaModalCajas(e.nativeEvent.text);
+  };
+//Funcion que actualiza el pallet
   const clickActualizarPallet = () => {
     //console.log(contenedores[numeroContenedor][pallet]);
 
@@ -42,13 +72,9 @@ export default function Footer() {
     // props.configurarContenedor(newContenedor);
     // console.log(newContenedor[props.numeroContenedor][props.pallet])
 
-    if (!(entrada === '' )) {
-      if(!(pallet === '0')){
-        if (
-          contenedores[numeroContenedor][pallet].hasOwnProperty(
-            'settings',
-          )
-        ) {
+    if (!(entrada === '')) {
+      if (!(pallet === 'sinPallet' || pallet === '0')) {
+        if (contenedores[numeroContenedor][pallet].hasOwnProperty('settings')) {
           if (loteActual.enf !== '') {
             let newContenedor = actualizarPallet(
               contenedores,
@@ -60,45 +86,106 @@ export default function Footer() {
             if (newContenedor === 'Error en el numero de cajas')
               Alert.alert(newContenedor);
             else {
-              setContenedores(newContenedor)
+              setContenedores(newContenedor);
               setEntrada('');
               Alert.alert('Guardado con exito');
             }
           } else Alert.alert('No ha obtenido el lote');
-          
         } else Alert.alert('Configure el pallet');
-        
-      } else Alert.alert("Error, no se puede actualizar las cajas sin pallet")
-     
+      } else Alert.alert('Error, no se puede actualizar las cajas sin pallet');
     } else Alert.alert('Error ingrese el numero de cajas ');
   };
-
+//funcion que elimina el elemento del pallet
   const clickEliminar = () => {
+    let newContenedor;
+    let newCajasSinPallet;
+
+    
     if (seleccionado !== '') {
-      let newContenedor = eliminarCajas(
-        contenedores,
-        numeroContenedor,
-        pallet,
-        seleccionado,
-        loteActual,
-        loteVaciando
-      );
-      if (newContenedor === 'Error')
-        Alert.alert(
-          'No se puede eliminar ese item debido a que es de un lote pasado',
+      if (pallet !== 'sinPallet') {
+        newContenedor = eliminarCajas(
+          contenedores,
+          numeroContenedor,
+          pallet,
+          seleccionado,
+          loteActual,
+          loteVaciando,
         );
+        
+      if (newContenedor === 'Error') { Alert.alert('No se puede eliminar ese item')}
       else {
-        setContenedores(newContenedor)
-        Alert.alert("Eliminado con exito")
+        setContenedores(newContenedor);
+        Alert.alert('Eliminado con exito');
         //console.log(newContenedor)
         // props.configurarContenedor(newContenedor);
         // props.obtenerSeleccionInformacion('');
       }
-    } else {
-      Alert.alert('No ha seleccionado las cajas que desea eliminar');
-    }
-  };
+    } else{
+        newCajasSinPallet = eliminarCajasSinPallet(
+          cajasSinPallet,
+          seleccionado
+        )
+        setCajasSinPallet(newCajasSinPallet)
+        setSeleccionado('')
+        Alert.alert('Eliminado con exito');
+        
+      }}
+      else {
+        Alert.alert('No ha seleccionado las cajas que desea eliminar');
+      }
+        
 
+ 
+  };
+//funcion que abre el modal para mover los items
+  const clickOpenMoverCajas = () => {
+    if(pallet == '0') return Alert.alert("Seleccione un pallet")
+    if(seleccionado == '') return Alert.alert("Seleccione un item que desee mover a otro pallet")
+    setOpenModal(true)
+  }
+//funcion que llama ala funcion que mueve elementos de una pallet a otro
+const clickMoverCajas = () => {
+  
+  let newContenedor: contenedoresObj;
+  let newCajasSinPallet: CajasSinPalletType;
+  if(entradaModalPallet == '') return Alert.alert("Ingrese el pallet al que desea mover las cajas");
+  if(entradaModalCajas == '') return Alert.alert("Ingrese el numero de cajas que desea mover");
+  if(pallet == 'sinPallet'){
+    //si el translado es entre las cajas sin pallet y un pallet
+    let intModalPallet:number = parseInt(entradaModalPallet)
+    let intModalCajas:number = parseInt(entradaModalCajas)
+    let [enf, index] = seleccionado.split("/")
+    if( intModalPallet <= 0 || intModalPallet > Object.keys(contenedores[numeroContenedor]).length -1) return Alert.alert("Ingrese un numero de pallet correcto");
+    if( intModalCajas > cajasSinPallet[enf][index][1] || intModalCajas <= 0) return Alert.alert("Ingrese un numero de cajas correcto");
+    [newContenedor, newCajasSinPallet] = moverCajasSinPallet(contenedores, numeroContenedor, cajasSinPallet, seleccionado, entradaModalPallet, intModalCajas);
+    setContenedores(newContenedor)
+    setCajasSinPallet(newCajasSinPallet)
+    setOpenModal(false)
+    setEntradaModalCajas('')
+    setEntradaModalPallet('')
+  } else {
+    //SI el translado es entre pallets
+ 
+    let intModalPallet:number = parseInt(entradaModalPallet)
+    let intModalCajas:number = parseInt(entradaModalCajas)
+    let [enf, index] = seleccionado.split("/")
+    if( intModalPallet <= 0 || intModalPallet > Object.keys(contenedores[numeroContenedor]).length -1) return Alert.alert("Ingrese un numero de pallet correcto");
+    if( intModalCajas > contenedores[numeroContenedor][pallet][enf][index][1] || intModalCajas <= 0) return Alert.alert("Ingrese un numero de cajas correcto");
+    let newContenedor = moverCajas(contenedores, numeroContenedor, pallet, seleccionado, entradaModalPallet, intModalCajas);
+    setContenedores(newContenedor)
+    setOpenModal(false)
+    setEntradaModalCajas('')
+    setEntradaModalPallet('')
+  }
+}
+//funcion para sumar cajas al item
+const clickSumarCajas = () => {
+
+  if(entrada == '') return Alert.alert("Ingrese el numero de cajas que desea sumar al item")
+  if(pallet == '0') return Alert.alert("Seleccione un pallet")
+  if(seleccionado == '') return Alert.alert("Seleccione el item al que desea sumar cajas")
+
+}
   return (
     <View style={styles.container}>
       <View>
@@ -112,8 +199,39 @@ export default function Footer() {
           onChange={e => getInput(e)}></TextInput>
       </View>
       <View>
+        <Button title="Sumar" onPress={clickSumarCajas}/>
+      </View>
+      <View>
+        <Button title="Mover" onPress={clickOpenMoverCajas}/>
+      </View>
+      <View>
         <Button title="Eliminar" onPress={clickEliminar} />
       </View>
+
+
+      {/* Modal */}
+    <Modal transparent={true} visible={openModal} animationType="fade">
+      <View style={styles.centerModal}>
+        <View style={styles.viewModal}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.textModalHeader}>Ingrese el numero del pallet al que desea mover el item</Text>
+          </View>
+          <View style={styles.modalInputView}>
+            <TextInput keyboardType="numeric" style={styles.modalInput} onChange={(e) => getInputModalPallet(e)} value={entradaModalPallet}></TextInput>
+          </View>
+          <View style={styles.modalHeader}>
+            <Text style={styles.textModalHeader}>Ingrese el numero de cajas que desea mover</Text>
+          </View>
+          <View style={styles.modalInputView}>
+            <TextInput keyboardType="numeric" style={styles.modalInput} onChange={(e) => getInputModalCajas(e)} value={entradaModalCajas}></TextInput>
+          </View>
+          <View style={styles.viewButtonsModal}>
+            <Button title='Mover' onPress={clickMoverCajas}/>
+            <Button title='Cancelar' onPress={() => setOpenModal(false)}/>
+          </View>
+        </View>
+      </View>
+    </Modal>
     </View>
   );
 }
@@ -148,4 +266,46 @@ const styles = StyleSheet.create({
   viewTextInput: {
     display: 'flex',
   },
+  centerModal:{
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center',
+    marginTop:'10%'
+  },
+  viewModal:{
+    width:500,
+    height:350,
+    backgroundColor:'white',
+    borderRadius:20,
+    elevation:30,
+    shadowColor:'black',
+    padding:10
+  },
+  modalHeader:{
+    padding:10
+  },
+  textModalHeader:{
+    fontSize:18,
+    fontWeight:'500'
+  },
+  modalInputView:{
+    margin:10,
+    paddingRight:50,
+    paddingLeft:10
+  },
+  modalInput:{
+    borderWidth:1,
+    borderRadius:10,
+    borderColor:'#7D9F3A',
+    backgroundColor:'#F5F5F5'
+  },
+  viewButtonsModal:{
+    display:'flex',
+    flexDirection:'row',
+    gap:50,
+    alignItems:'center',
+    justifyContent:'center',
+    marginTop:30
+  }
+
 });

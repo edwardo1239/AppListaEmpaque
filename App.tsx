@@ -30,6 +30,7 @@ function App(): JSX.Element {
   const fetchContenedores = useContenedoresStore(state => state.fetchContenedores);
   const fetchCajasSinPallet = useCajasSinPalletStore(state => state.fetchCajasSinPallet)
   const contenedores = useContenedoresStore(state => state.contenedores);
+  const setContenedores = useContenedoresStore(state => state.setContenedores)
   const setLoteVaciando = useLoteStore(state => state.setLoteVaciando)
   const loteVaciando = useLoteStore(state => state.loteVaciando)
 
@@ -37,7 +38,8 @@ function App(): JSX.Element {
 
   //constantes contexion internet
 
-  const [link, setLink] = useState<string>('');
+  // const [link, setLink] = useState<any>({});
+  var link:string = '';
  
 
 
@@ -59,30 +61,29 @@ function App(): JSX.Element {
  
   //use efect con intervalos que obtienen el lote de vaciado actual
   useEffect(() => {
+
     const getLinks = async () => {
       try {
-        console.log('conectando con links');
+        //console.log('conectando con links');
         const responseJSON = await fetch(
           'https://script.google.com/macros/s/AKfycbyxbqQq58evRO8Hp5FE88TJPatYPc03coveFaBc9cFYYIii-j5I1tvxsUOQH7xfJ8KB/exec',
         );
         const response = await responseJSON.json();
-       
-         setLink(response.listaEmpaque);
-         const responseJSON1 = await fetch(link + '?action=predioVaciando');
-         const loteVaciando = await responseJSON1.json();
-         await setLoteVaciando(loteVaciando)
-        console.log(link)
+        link=response.listaEmpaque
+
+        //console.log(link)
       } catch (e) {
         Alert.alert('Error obteniendo los links' + e);
       }
     };
+   
     //console.log(contenedores)
     const interval = setInterval(async () => {
       //console.log("contenedores")
       try {
-        console.log(link)
+        //console.log("link")
         if(link !== ''){
-          console.log('fetchimg the lote')
+          //console.log('fetchimg the lote')
           const responseJSON = await fetch(link + '?action=predioVaciando');
           const loteVaciando = await responseJSON.json();
           await setLoteVaciando(loteVaciando)
@@ -95,11 +96,11 @@ function App(): JSX.Element {
          
           //setLoteVaciando(response.infoPredio);
 
-          // if (response.bandera === 1) {
+          // if (true) {
           //   //crear funcion para obtener el nuevo contenedor
-          //   // let newContenedorJSON = await fetch(link + '?action=listaEmpaque');
-          //   // let newContenedor = await newContenedorJSON.json()
-          //   // await configurarContenedor(newContenedor)
+          //   let newContenedorJSON = await fetch(link + '?action=listaEmpaque');
+          //   let newContenedor = await newContenedorJSON.json()
+          //   setContenedores(newContenedor)
           // }
         
       } catch (e: any) {
@@ -110,28 +111,6 @@ function App(): JSX.Element {
 
     return () => clearInterval(interval);
   }, []);
-
-  // const contenedorTabla = (numeroContenedor: string): void => {
-  //   setNumeroContenedor(numeroContenedor);
-  // };
-
-  // const obtenerPallet = (numeroPallet: string): void => {
-  //   setPallet(numeroPallet);
-  // };
-
-  // const configurarContenedor = async (contenedores: contenedoresObj) => {
-
-  //   const contenedoresJSON = JSON.stringify(contenedores);
-  //   await AsyncStorage.setItem('contenedores', contenedoresJSON);
-  // };
-
-  // const settingLoteActual = (predio: LoteType) => {
-  //   setLoteActual(predio);
-  // };
-
-  // const obtenerSeleccionInformacion = (e:string):void => {
-  //   setInformacionSeleccion(e);
-  // }
 
   return (
     <ScrollView>
