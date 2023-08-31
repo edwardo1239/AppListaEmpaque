@@ -38,11 +38,12 @@ export default function SettingsCajasSinPallet(props: modalTypes) {
   const getInput = (
     e: NativeSyntheticEvent<TextInputChangeEventData>,
   ): void => {
-   //console.log(e.nativeEvent.text)
+
     setCajas(e.nativeEvent.text);
   };
 
   const clickGuardar = (): void => {
+    console.log(cajasSinPallet)
     if(predio.enf === '') return Alert.alert("No ha seleccionado predio")
     if((cajas !== '')){
       if (
@@ -61,7 +62,6 @@ export default function SettingsCajasSinPallet(props: modalTypes) {
        
         let newCajasSinPallet = guardarCajasSinPallet(cajasSinPallet, cajasVector, predio.enf)
         setCajasSinPallet(newCajasSinPallet)
-        console.log(newCajasSinPallet)
 
 
         setCajas('');

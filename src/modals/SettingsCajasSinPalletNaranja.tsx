@@ -36,7 +36,7 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
   const getInput = (
     e: NativeSyntheticEvent<TextInputChangeEventData>,
   ): void => {
-   //console.log(e.nativeEvent.text)
+
     setCajas(e.nativeEvent.text);
   };
 
@@ -58,7 +58,7 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
        
         let newCajasSinPallet = guardarCajasSinPallet(cajasSinPallet, cajasVector, predio.enf)
         setCajasSinPallet(newCajasSinPallet)
-        console.log(newCajasSinPallet)
+
 
 
         setCajas('');

@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View, Image} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View, Image, Alert} from 'react-native';
 
 import SettingPalletLimon from '../modals/SettingPalletLimon';
 import SettingPalletNaranja from '../modals/SettingPalletNaranja';
@@ -9,11 +9,13 @@ import {useLoteStore} from '../store/Predios';
 import SettingsCajasSinPalletLimon from '../modals/SettingsCajasSinPalletLimon';
 import SettingsCajasSinPalletNaranja from '../modals/SettingsCajasSinPalletNaranja';
 import {useCajasSinPalletStore} from '../store/Cajas';
+import { contenedoresObj } from '../store/types';
+
 
 export default function Pallets() {
   const setPallet = useContenedoresStore(state => state.setPallet);
   const setContenedores = useContenedoresStore(state => state.setContenedores);
-  const contenedores = useContenedoresStore(state => state.contenedores);
+  const { contenedores } = useContenedoresStore(state => state);
   const numeroContenedor = useContenedoresStore(
     state => state.numeroContenedor,
   );
@@ -23,18 +25,19 @@ export default function Pallets() {
 
   const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet);
 
+  useEffect(()=>{
+    
+    setRerender(!rerender)},[setContenedores])
+
+   
+
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [openModalSinPallet, setOpenModalSinPallet] = useState<boolean>(false);
+  const [rerender, setRerender] = useState({})
   // const [sinPallet, setSinPallet] = useState<string>('0')
 
   const palletPress = (e: string) => {
-    //console.log(props.contenedores[props.numeroContenedor][pallet]);
     setPallet(e);
-    setSeleccion('');
-  };
-
-  const sinPalletPress = (e: string) => {
-    setPallet('sinPallet');
     setSeleccion('');
   };
 
@@ -72,55 +75,108 @@ export default function Pallets() {
     contenedoresTemp[numeroContenedor][pallet]['settings']['calibre'] =
       radioButtonCalibre;
 
-    //console.log(contenedoresTemp);
     setContenedores(contenedoresTemp);
     setOpenModal(false);
   };
 
+  const guardarLiberacion = (
+    rotulado: boolean,
+    paletizado: boolean,
+    enzunchado: boolean,
+    estadoCajas: boolean,
+    estiba: boolean,
+  ) => {
+    if (
+      !contenedores[numeroContenedor][pallet].hasOwnProperty(
+        'listaLiberarPallet',
+      )
+    ) {
+      contenedores[numeroContenedor][pallet]['listaLiberarPallet'] = {};
+    }
+    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['rotulado'] =
+      rotulado;
+    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['paletizado'] =
+      paletizado;
+    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['enzunchado'] =
+      enzunchado;
+    contenedores[numeroContenedor][pallet]['listaLiberarPallet'][
+      'estadoCajas'
+    ] = estadoCajas;
+    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estiba'] =
+      estiba;
+
+    setContenedores(contenedores);
+    Alert.alert("Guardado con exito")
+  };
+
   return (
-    <View style={styles.container}>
+    <View
+      style={
+        numeroContenedor === '0'
+          ? {minHeight: 525, width: 925}
+          : styles.container
+      }>
       {numeroContenedor !== '0' &&
         Object.keys(contenedores[numeroContenedor]).map(
           item =>
             item !== 'nombreCliente' && (
               <View style={styles.palletContainer} key={'view' + item}>
-                <TouchableOpacity
-                  style={
-                    pallet !== '0' && pallet == item
-                      ? styles.palletsPress
-                      : styles.palletsButons
-                  }
-                  onPress={() => palletPress(item)}
-                  onLongPress={() => openPalletSettings(item)}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignContent: 'center',
-                      gap: 10,
-                    }}>
+                {contenedores[numeroContenedor][item].hasOwnProperty(
+                  'liberado',
+                ) ? (
+                  <View style={styles.palletsButonsLiberado}>
                     <Image
                       key={'img' + item}
                       source={require('../assets/palletIMG.png')}
                       style={styles.image}
                     />
-                    <Text style={{fontSize: 20}}>
-                      {contenedores[numeroContenedor][item].hasOwnProperty(
-                        'settings',
-                      ) &&
-                        contenedores[numeroContenedor][item]['settings'][
-                          'calibre'
-                        ]}
-                    </Text>
+                    <View style={{marginLeft: 25}}>
+                      <Text style={{fontSize: 50, fontWeight: 'bold'}}>
+                        {contenedores[numeroContenedor][item].hasOwnProperty(
+                          'cajasTotal',
+                        ) && contenedores[numeroContenedor][item]['cajasTotal']}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={{marginLeft: 25}}>
-                    <Text style={{fontSize: 50, fontWeight: 'bold'}}>
-                      {contenedores[numeroContenedor][item].hasOwnProperty(
-                        'cajasTotal',
-                      ) && contenedores[numeroContenedor][item]['cajasTotal']}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={
+                      pallet !== '0' && pallet == item
+                        ? styles.palletsPress
+                        : styles.palletsButons
+                    }
+                    onPress={() => palletPress(item)}
+                    onLongPress={() => openPalletSettings(item)}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignContent: 'center',
+                        gap: 10,
+                      }}>
+                      <Image
+                        key={'img' + item}
+                        source={require('../assets/palletIMG.png')}
+                        style={styles.image}
+                      />
+                      <Text style={{fontSize: 20}}>
+                        {contenedores[numeroContenedor][item].hasOwnProperty(
+                          'settings',
+                        ) &&
+                          contenedores[numeroContenedor][item]['settings'][
+                            'calibre'
+                          ]}
+                      </Text>
+                    </View>
+                    <View style={{marginLeft: 25}}>
+                      <Text style={{fontSize: 50, fontWeight: 'bold'}}>
+                        {contenedores[numeroContenedor][item].hasOwnProperty(
+                          'cajasTotal',
+                        ) && contenedores[numeroContenedor][item]['cajasTotal']}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
                 <Text style={styles.fonts} key={'pallet' + item}>
                   Pallet {item}
                 </Text>
@@ -140,8 +196,8 @@ export default function Pallets() {
           <Text style={{marginLeft: 8, fontWeight: '500'}}>
             Cajas Sin Pallet
           </Text>
-          <Text style={{fontSize:40,fontWeight:'bold',marginLeft:10}}>
-            {Object.keys(cajasSinPallet).reduce(
+          <Text style={{fontSize: 40, fontWeight: 'bold', marginLeft: 10}}>
+            {cajasSinPallet && Object.keys(cajasSinPallet).reduce(
               (acu1, item1) =>
                 acu1 +
                 cajasSinPallet[item1].reduce(
@@ -152,19 +208,22 @@ export default function Pallets() {
             )}
           </Text>
         </TouchableOpacity>
+        
       </View>
-
+  
       {loteActual.tipoFruta === 'Limon' ? (
         <SettingPalletLimon
           openModal={openModal}
-          closeModal={closeModal}
           guardarSettings={guardarSettings}
+          closeModal={closeModal}
+          guardarLiberacion={guardarLiberacion}
         />
       ) : (
         <SettingPalletNaranja
           openModal={openModal}
           guardarSettings={guardarSettings}
           closeModal={closeModal}
+          guardarLiberacion={guardarLiberacion}
         />
       )}
 
@@ -199,6 +258,7 @@ const styles = StyleSheet.create({
     width: 900,
     flexWrap: 'wrap',
     margin: 30,
+    minHeight: 155,
   },
   image: {
     width: 50,
@@ -233,4 +293,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+  palletsButonsLiberado:{
+    width: 115,
+    height: 115,
+    backgroundColor: '#FF22',
+    margin: 5,
+    borderRadius: 10,
+
+  }
 });

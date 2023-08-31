@@ -12,7 +12,7 @@ import { useCajasSinPalletStore } from '../store/Cajas';
 
 function Informacion() {
 
-const contenedores = useContenedoresStore(state => state.contenedores)
+const {contenedores} = useContenedoresStore(state => state)
 const numeroContenedor = useContenedoresStore(state => state.numeroContenedor)
 const pallet = useContenedoresStore(state => state.pallet)
 const setSeleccion = useContenedoresStore(state => state.setSeleccion)
@@ -26,6 +26,7 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
     {pallet == 'sinPallet' ? 
       <ScrollView style={styles.scrollStyle}>
         {pallet == 'sinPallet' && 
+        cajasSinPallet &&
           Object.keys(cajasSinPallet).map(item => 
             cajasSinPallet[item].length > 0 && (
               <View key={item+'view'} style={styles.container}>

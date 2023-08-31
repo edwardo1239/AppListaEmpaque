@@ -16,15 +16,17 @@ import { useContenedoresStore } from '../store/Contenedores';
 import { useLoteStore } from '../store/Predios';
 import { useCajasSinPalletStore } from '../store/Cajas';
 
+type headerType = {
+  cerrarContenedor: (numeroContenedor:string) => void
+}
 
-export default function Header(): JSX.Element {
+export default function Header(props:headerType): JSX.Element {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [cliente, setCliente] = useState<string>('Contenedores');
-  const [isEnabled, setIsEnabled] = useState<boolean>(false);
-  const [loteActualHeader, setLoteActualHeader] = useState<string>('');
 
 
-  const contenedores = useContenedoresStore(state => state.contenedores);
+
+  const {contenedores} = useContenedoresStore(state => state);
   const setNumeroContenedor = useContenedoresStore(state => state.setNumeroContenedor);
   const loteVaciando = useLoteStore(state => state.loteVaciando);
   const setLoteActual = useLoteStore(state => state.setLoteActual);
@@ -41,6 +43,26 @@ export default function Header(): JSX.Element {
   //   setLoteActualHeader(props.predio.enf + '  ' + props.predio.nombreLote);
   // };
 
+  const clickCerrarContenedor = () => {
+    let flagCerrarContenedor = true
+    Object.keys(contenedores[numeroContenedor]).map((item) => {
+      if(item !== 'nombreCliente'){
+        if(!contenedores[numeroContenedor][item].hasOwnProperty('liberado')){
+          flagCerrarContenedor = false
+        }
+        if(contenedores[numeroContenedor][item]['liberado'] == false){
+          flagCerrarContenedor = false
+        }
+      }
+    });
+    if(flagCerrarContenedor){
+      props.cerrarContenedor(numeroContenedor)
+    }
+    else {
+      Alert.alert("Se deben liberar todos los pallets antes de cerrar el contenedor")
+    }
+  }
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,6 +71,10 @@ export default function Header(): JSX.Element {
           source={require('../assets/CELIFRUT.png')}
           style={styles.image}
         />
+      </View>
+
+      <View>
+        <Button title='Cerrar Contenedor' onPress={clickCerrarContenedor}/>
       </View>
 
       <View>
@@ -63,7 +89,7 @@ export default function Header(): JSX.Element {
 
       { <View>
         <Text>Cajas Total:</Text>
-        <Text>{ contenedores[numeroContenedor]
+        <Text>{ contenedores[numeroContenedor] && cajasSinPallet
         &&
         Object.keys(contenedores[numeroContenedor]).reduce((acu:number, item:any) => {
           if(item === 'config' || item === 'nombreCliente'){}

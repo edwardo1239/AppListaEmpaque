@@ -19,7 +19,7 @@ export const useCajasSinPalletStore = create<State>((set, get) => {
         fetchCajasSinPallet: async () =>{
             const jsonValue = await AsyncStorage.getItem('cajasSinPallet');
             const CajasSinPallet = jsonValue != null ? JSON.parse(jsonValue) : null;
-            console.log(CajasSinPallet)
+
             set({CajasSinPallet})
         },
         setCajasSinPallet: async (cajasSinPallet:CajasSinPalletType) => {

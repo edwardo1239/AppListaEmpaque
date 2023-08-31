@@ -19,7 +19,6 @@ export const useLoteStore = create<State>(set => {
     },
 
     setLoteActual: (lote: LoteType) => {
-        console.log(lote)
         set({ loteActual: lote })
     }
   };
