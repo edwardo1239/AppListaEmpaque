@@ -124,7 +124,7 @@ export default function Header(props:headerType): JSX.Element {
 
       { <View>
         <Text>Cajas Total:</Text>
-        <Text>{ contenedores[numeroContenedor] && cajasSinPallet
+        <Text>{contenedores && contenedores[numeroContenedor] && cajasSinPallet
         &&
         Object.keys(contenedores[numeroContenedor]).reduce((acu:number, item:any) => {
           if(item === 'config' || item === 'nombreCliente'){}
@@ -148,15 +148,22 @@ export default function Header(props:headerType): JSX.Element {
         }</Text>
       </View> }
 
-      <TouchableOpacity
+  
+        <TouchableOpacity
         style={styles.buttonContenedores}
-        onPress={() => setLoteActual(loteVaciando)}>
+        onPress={() => {
+          setLoteActual(loteVaciando)}
+
+        }>
         <Text>Obtener Lote</Text>
       </TouchableOpacity>
-
+      
+    
       <TouchableOpacity
         style={styles.buttonContenedores}
-        onPress={() => setModalVisible(true)}>
+        onPress={() => {
+        if(Object.keys(contenedores).length !== 0)
+        setModalVisible(true)}}>
         <Text>{cliente}</Text>
       </TouchableOpacity>
 
@@ -164,7 +171,7 @@ export default function Header(props:headerType): JSX.Element {
         <View style={styles.centerModal}>
           <View style={styles.viewModal}>
             <FlatList
-              data={Object.keys(contenedores)}
+              data={contenedores && Object.keys(contenedores)}
               style={styles.pressableStyle}
               renderItem={({item}) => (
                 <TouchableOpacity
@@ -191,7 +198,7 @@ export default function Header(props:headerType): JSX.Element {
       </Modal>
 
       <Modal transparent={true} visible={confirmacionModal} animationType="fade">
-        <View  style={styles.centerConfimarcionModal}>
+        <TouchableOpacity  style={styles.centerConfimarcionModal} onPress={() => setModalVisible(false)}>
           <View style={styles.viewModalConfirmacion}>
             <Text style={styles.titleModalConfirmacion}>{confirmacion}</Text>
             <View style={styles.modalButtonsConfirmacion}>
@@ -199,7 +206,7 @@ export default function Header(props:headerType): JSX.Element {
               <Button title='Cancelar' onPress={() => setConfirmacionModal(false)}/>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
     </SafeAreaView>
   );
@@ -240,6 +247,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     marginTop: '6%',
+    backgroundColor:'rgba(0,0,0,0.25'
   },
   viewModal: {
     display: 'flex',

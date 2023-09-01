@@ -37,10 +37,11 @@ function App(): JSX.Element {
   const [url, setUrl] = useState<string>('');
 
   var link: string = '';
-  let contador = 120;
+  let contador = 0;
 
   // use Effect que obtiene los ocntenedores de memoria
   useEffect(() => {
+    
     const funcionFetchContenedores = () => {
       fetchContenedores();
       fetchCajasSinPallet();
@@ -56,7 +57,9 @@ function App(): JSX.Element {
           'https://script.google.com/macros/s/AKfycbyxbqQq58evRO8Hp5FE88TJPatYPc03coveFaBc9cFYYIii-j5I1tvxsUOQH7xfJ8KB/exec',
         );
         const response = await responseJSON.json();
+      
         link = response.listaEmpaque;
+     
       } catch (e) {
         Alert.alert('Error obteniendo los links' + e);
       }
@@ -66,15 +69,20 @@ function App(): JSX.Element {
       try {
         contador++;
         setUrl(link);
-        //console.log(link)
+
         if (link !== '') {
+
           const responseJSON = await fetch(link + '?action=predioVaciando');
           const loteVaciando = await responseJSON.json();
+        
+          //console.log(loteVaciando)
           await setLoteVaciando(loteVaciando);
+
         } else {
+      
           await getLinks();
         }
-        if (contador >= 120) {
+        if (contador >= 120 ) {
           const jsonValuex: any = await AsyncStorage.getItem('contenedores');
           const contenedoresOut = await JSON.parse(jsonValuex);
 
@@ -129,6 +137,7 @@ function App(): JSX.Element {
       console.log(responseJson);
 
       delete contenedoresCerrar[numeroContenedor];
+
 
       setNumeroContenedor('0');
       setContenedores(contenedoresCerrar);

@@ -32,6 +32,7 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
     if (numeroContenedor == '0' || pallet == '0') {
     } else {
       if (
+        pallet !== '0' &&
         contenedores[numeroContenedor][pallet].hasOwnProperty(
           'listaLiberarPallet',
         )

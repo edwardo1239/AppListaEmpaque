@@ -119,6 +119,24 @@ export default function SettingPalletNaranja(props: modalLimonTypes) {
     props.closeModal(false);
   }
 
+  const readyToBeFree = ():boolean => {
+   
+  
+    if(numeroContenedor == '0') return true
+    if(pallet == '0' || pallet == 'sinPallet') return true
+    else if(contenedores[numeroContenedor][pallet].hasOwnProperty('listaLiberarPallet')){
+      if( contenedores[numeroContenedor][pallet]['listaLiberarPallet']['rotulado'] && 
+      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estadoCajas'] && 
+      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estiba'] && 
+      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['paletizado'] && 
+      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['enzunchado'] ) {
+        return false
+      }
+    }
+  
+    return true
+  }
+
   return (
     <Modal transparent={true} visible={props.openModal} animationType="fade">
       <View style={styles.centerModal}>
@@ -339,19 +357,9 @@ export default function SettingPalletNaranja(props: modalLimonTypes) {
               <Button
                 title="Liberar Pallet"
                 onPress={liberarPallet}
-                disabled={
-                  contenedores.hasOwnProperty('numeroContenedor') &&
-                  contenedores[numeroContenedor].hasOwnProperty('pallet') &&
-                  contenedores[numeroContenedor][pallet].hasOwnProperty('listaLiberarPallet') && (
-                    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['rotulado'] && 
-                    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estadoCajas'] && 
-                    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estiba'] && 
-                    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['paletizado'] && 
-                    contenedores[numeroContenedor][pallet]['listaLiberarPallet']['enzunchado'] )
-                    ? false
-                    : true
-                }
+                disabled={readyToBeFree()}
               />
+       
             </View>
           </View>
         </View>
