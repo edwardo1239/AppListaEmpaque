@@ -17,7 +17,7 @@ export default function limiteCajasPallet(settings,numeroCajas){
                 if(numeroCajas > 70) return false;
                 else return true;
             case 'G-4.5':
-                if(numeroCajas > 70) return false;
+                if(numeroCajas > 240) return false;
                 else return true;
             default: return settings['tipoCaja']
         }

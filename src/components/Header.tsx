@@ -10,7 +10,6 @@ import {
   Text,
   Modal,
   FlatList,
-  Switch,
 } from 'react-native';
 import { useContenedoresStore } from '../store/Contenedores'; 
 import { useLoteStore } from '../store/Predios';
@@ -18,11 +17,15 @@ import { useCajasSinPalletStore } from '../store/Cajas';
 
 type headerType = {
   cerrarContenedor: (numeroContenedor:string) => void
+  sincronizarConServidor: () => void
 }
 
 export default function Header(props:headerType): JSX.Element {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [cliente, setCliente] = useState<string>('Contenedores');
+
+  const [confirmacionModal, setConfirmacionModal] = useState<boolean>(false)
+  const [confirmacion, setConfirmacion] = useState<string>('')
 
 
 
@@ -42,9 +45,27 @@ export default function Header(props:headerType): JSX.Element {
   //   props.settingLoteActual(props.predio);
   //   setLoteActualHeader(props.predio.enf + '  ' + props.predio.nombreLote);
   // };
+  const clickOpenConfirmacion = (e:string) =>{
+
+    if(e === '¿Deseas cerrar el contenedor?'){
+      setConfirmacion(e)
+      setConfirmacionModal(true)
+     
+    }
+    else if (e === '¿Desea sincronizar los datos con el servidor?'){
+      setConfirmacion(e)
+      setConfirmacionModal(true)
+     
+    }
+  }
+
+  
 
   const clickCerrarContenedor = () => {
+
+    setConfirmacionModal(false)
     let flagCerrarContenedor = true
+
     Object.keys(contenedores[numeroContenedor]).map((item) => {
       if(item !== 'nombreCliente'){
         if(!contenedores[numeroContenedor][item].hasOwnProperty('liberado')){
@@ -55,26 +76,40 @@ export default function Header(props:headerType): JSX.Element {
         }
       }
     });
+
     if(flagCerrarContenedor){
       props.cerrarContenedor(numeroContenedor)
     }
     else {
       Alert.alert("Se deben liberar todos los pallets antes de cerrar el contenedor")
     }
+   
   }
 
+  const clickAceptar = () =>{
+    if(confirmacion === '¿Deseas cerrar el contenedor?'){
+     
+      clickCerrarContenedor()
+    }
+    else if (confirmacion === '¿Desea sincronizar los datos con el servidor?'){
+      props.sincronizarConServidor()
+      setConfirmacionModal(false)
+
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      <TouchableOpacity onPress={() => clickOpenConfirmacion('¿Desea sincronizar los datos con el servidor?')}>
         <Image
           source={require('../assets/CELIFRUT.png')}
           style={styles.image}
+          
         />
-      </View>
+      </TouchableOpacity>
 
       <View>
-        <Button title='Cerrar Contenedor' onPress={clickCerrarContenedor}/>
+        <Button title='Cerrar Contenedor' onPress={() => clickOpenConfirmacion('¿Deseas cerrar el contenedor?')}/>
       </View>
 
       <View>
@@ -154,6 +189,18 @@ export default function Header(props:headerType): JSX.Element {
           </View>
         </View>
       </Modal>
+
+      <Modal transparent={true} visible={confirmacionModal} animationType="fade">
+        <View  style={styles.centerConfimarcionModal}>
+          <View style={styles.viewModalConfirmacion}>
+            <Text style={styles.titleModalConfirmacion}>{confirmacion}</Text>
+            <View style={styles.modalButtonsConfirmacion}>
+              <Button title='aceptar' onPress={clickAceptar}/>
+              <Button title='Cancelar' onPress={() => setConfirmacionModal(false)}/>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -217,4 +264,33 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 20,
   },
+  centerConfimarcionModal:{
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center',
+    marginTop:'10%'
+  },
+  viewModalConfirmacion:{
+    width:450,
+    height:200,
+    backgroundColor:'white',
+    borderRadius:20,
+    elevation:20,
+    display:'flex',
+    flexDirection: 'column',
+    justifyContent:'center',
+    gap:50,
+    textAlign:'center'
+  },
+  titleModalConfirmacion:{
+    fontSize:25,
+    fontWeight:'bold',
+    marginLeft:60
+  },
+  modalButtonsConfirmacion:{
+    display:'flex',
+    flexDirection:'row',
+    gap:25,
+    justifyContent:'center'
+  }
 });
