@@ -58,7 +58,8 @@ function App(): JSX.Element {
         );
         const response = await responseJSON.json();
       
-        link = response.listaEmpaque;
+        //link = response.listaEmpaque;
+        link = response.listaEmpaqueDev;
      
       } catch (e) {
         Alert.alert('Error obteniendo los links' + e);

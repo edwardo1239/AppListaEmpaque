@@ -116,10 +116,24 @@ export default function Header(props:headerType): JSX.Element {
         <Text>Predio Vaciando:</Text>
         <Text>{loteVaciando.enf + '  ' + loteVaciando.nombreLote}</Text>
       </View>
+
+      <View>
+        <Image
+          source={loteVaciando.tipoFruta === 'Limon' ?  require('../assets/limon.jpg') : require('../assets/naranja.jpg')}
+          style={styles.image}
+          />
+      </View>
  
       <View>
         <Text>Predio Actual:</Text>
         <Text>{loteActual.enf + '  ' + loteActual.nombreLote}</Text>
+      </View>
+      
+      <View>
+        <Image
+           source={loteActual.tipoFruta === 'Limon' ?  require('../assets/limon.jpg') : require('../assets/naranja.jpg')}
+          style={styles.image}
+          />
       </View>
 
       { <View>
