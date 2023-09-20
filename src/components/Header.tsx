@@ -18,6 +18,8 @@ import { useCajasSinPalletStore } from '../store/Cajas';
 type headerType = {
   cerrarContenedor: (numeroContenedor:string) => void
   sincronizarConServidor: () => void
+  enviarDataContenedores: (url:string) => void
+  url:string
 }
 
 export default function Header(props:headerType): JSX.Element {
@@ -45,6 +47,12 @@ export default function Header(props:headerType): JSX.Element {
   //   props.settingLoteActual(props.predio);
   //   setLoteActualHeader(props.predio.enf + '  ' + props.predio.nombreLote);
   // };
+
+  const obtenerGuardarInfo = async () =>{
+    setLoteActual(loteVaciando)
+    await props.enviarDataContenedores(props.url)
+  }
+
   const clickOpenConfirmacion = (e:string) =>{
 
     if(e === '¿Deseas cerrar el contenedor?'){
@@ -58,8 +66,6 @@ export default function Header(props:headerType): JSX.Element {
      
     }
   }
-
-  
 
   const clickCerrarContenedor = () => {
 
@@ -165,10 +171,7 @@ export default function Header(props:headerType): JSX.Element {
   
         <TouchableOpacity
         style={styles.buttonContenedores}
-        onPress={() => {
-          setLoteActual(loteVaciando)}
-
-        }>
+        onPress={obtenerGuardarInfo}>
         <Text>Obtener Lote</Text>
       </TouchableOpacity>
       

@@ -24,6 +24,7 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
   return (
     <>
     {pallet == 'sinPallet' ? 
+  
       <ScrollView style={styles.scrollStyle}>
         {pallet == 'sinPallet' && 
         cajasSinPallet &&
@@ -69,7 +70,8 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
             ))}
       </ScrollView>
       :
-      <ScrollView style={styles.scrollStyle}>
+
+      <ScrollView style={styles.scrollStyle} nestedScrollEnabled={true}>
       {pallet !== '0'  &&
         Object.keys(
           contenedores[numeroContenedor][pallet],
@@ -121,6 +123,8 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
             ),
         )}
     </ScrollView>
+   
+
       }
    
   </>
@@ -133,10 +137,11 @@ const styles = StyleSheet.create({
   scrollStyle: {
     backgroundColor: '#FFE6FF',
     padding: 5,
-    flex: 2,
-
     elevation: 10,
     shadowColor: '#52006A',
+
+
+
   },
   container: {
     margin:5

@@ -59,7 +59,7 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
   const numeroContenedor = useContenedoresStore(
     state => state.numeroContenedor,
   );
-  const setContenedores = useContenedoresStore(state => state.setContenedores)
+  const setContenedores = useContenedoresStore(state => state.setContenedores);
 
   const [radioButtonTipoCaja, setRadioButtonTipoCaja] = useState<string>('');
   const [radioButtonCalidad, setRadioButtonCalidad] = useState<number>(0);
@@ -106,38 +106,52 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
     setEnzunchado(false);
     setEstadoCajas(false);
     setEstiba(false);
-    props.closeModal(false)
-   0
+    props.closeModal(false);
+    0;
   };
 
-  const liberarPallet = (): void =>{
-    contenedores[numeroContenedor][pallet]['liberado'] = true
-    setContenedores(contenedores)
+  const liberarPallet = (): void => {
+    contenedores[numeroContenedor][pallet]['liberado'] = true;
+    setContenedores(contenedores);
     setRotulado(false);
     setPaletizado(false);
     setEnzunchado(false);
     setEstadoCajas(false);
     setEstiba(false);
     props.closeModal(false);
-  }
+  };
 
-  const readyToBeFree = ():boolean => {
-   
-  
-    if(numeroContenedor == '0') return true
-    if(pallet == '0' || pallet == 'sinPallet') return true
-    else if(contenedores[numeroContenedor][pallet].hasOwnProperty('listaLiberarPallet')){
-      if( contenedores[numeroContenedor][pallet]['listaLiberarPallet']['rotulado'] && 
-      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estadoCajas'] && 
-      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['estiba'] && 
-      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['paletizado'] && 
-      contenedores[numeroContenedor][pallet]['listaLiberarPallet']['enzunchado'] ) {
-        return false
+  const readyToBeFree = (): boolean => {
+    if (numeroContenedor == '0') return true;
+    if (pallet == '0' || pallet == 'sinPallet') return true;
+    else if (
+      contenedores[numeroContenedor][pallet].hasOwnProperty(
+        'listaLiberarPallet',
+      )
+    ) {
+      if (
+        contenedores[numeroContenedor][pallet]['listaLiberarPallet'][
+          'rotulado'
+        ] &&
+        contenedores[numeroContenedor][pallet]['listaLiberarPallet'][
+          'estadoCajas'
+        ] &&
+        contenedores[numeroContenedor][pallet]['listaLiberarPallet'][
+          'estiba'
+        ] &&
+        contenedores[numeroContenedor][pallet]['listaLiberarPallet'][
+          'paletizado'
+        ] &&
+        contenedores[numeroContenedor][pallet]['listaLiberarPallet'][
+          'enzunchado'
+        ]
+      ) {
+        return false;
       }
     }
-  
-    return true
-  }
+
+    return true;
+  };
 
   return (
     <Modal transparent={true} visible={props.openModal} animationType="fade">
@@ -147,7 +161,7 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
             <Text style={styles.tituloModal}>Configurar Pallet {pallet}</Text>
             <View style={styles.containerConfigurarPallet}>
               <Text>Tipo de caja</Text>
-              <View style={{display: 'flex', flexDirection: 'row', gap: 20}}>
+              <View style={styles.optionsContainer}>
                 <TouchableOpacity
                   onPress={() => setRadioButtonTipoCaja('G-37')}>
                   <View style={styles.radioButton}>
@@ -181,6 +195,28 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
                     <Text>B-37</Text>
                   </View>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setRadioButtonTipoCaja('B-40')}>
+                  <View style={styles.radioButton}>
+                    <View style={styles.radio}>
+                      {radioButtonTipoCaja == 'B-40' ? (
+                        <View style={styles.radioBg}></View>
+                      ) : null}
+                    </View>
+                    <Text>B-40</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setRadioButtonTipoCaja('G-40')}>
+                  <View style={styles.radioButton}>
+                    <View style={styles.radio}>
+                      {radioButtonTipoCaja == 'G-40' ? (
+                        <View style={styles.radioBg}></View>
+                      ) : null}
+                    </View>
+                    <Text>G-40</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.containerConfigurarPallet}>
@@ -210,70 +246,127 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
             </View>
             <View style={styles.containerConfigurarPallet}>
               <Text>Calibre</Text>
-              <View style={styles.optionsContainer}>
-                <TouchableOpacity onPress={() => setRadioButtonCalibre(250)}>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                      {radioButtonCalibre == 250 ? (
-                        <View style={styles.radioBg}></View>
-                      ) : null}
+              {radioButtonTipoCaja === 'G-4.5' ? (
+                <View style={styles.optionsContainer}>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(63)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 63 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>63</Text>
                     </View>
-                    <Text>250</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setRadioButtonCalibre(230)}>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                      {radioButtonCalibre == 230 ? (
-                        <View style={styles.radioBg}></View>
-                      ) : null}
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(54)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 54 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>54</Text>
                     </View>
-                    <Text>230</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setRadioButtonCalibre(200)}>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                      {radioButtonCalibre == 200 ? (
-                        <View style={styles.radioBg}></View>
-                      ) : null}
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(48)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 48 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>48</Text>
                     </View>
-                    <Text>200</Text>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => setRadioButtonCalibre(175)}>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                      {radioButtonCalibre == 175 ? (
-                        <View style={styles.radioBg}></View>
-                      ) : null}
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(42)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 42 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>42</Text>
                     </View>
-                    <Text>175</Text>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => setRadioButtonCalibre(150)}>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                      {radioButtonCalibre == 150 ? (
-                        <View style={styles.radioBg}></View>
-                      ) : null}
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(36)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 36 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>36</Text>
                     </View>
-                    <Text>150</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setRadioButtonCalibre(110)}>
-                  <View style={styles.radioButton}>
-                    <View style={styles.radio}>
-                      {radioButtonCalibre == 110 ? (
-                        <View style={styles.radioBg}></View>
-                      ) : null}
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.optionsContainer}>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(250)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 250 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>250</Text>
                     </View>
-                    <Text>110</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(230)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 230 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>230</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(200)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 200 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>200</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(175)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 175 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>175</Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(150)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 150 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>150</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setRadioButtonCalibre(110)}>
+                    <View style={styles.radioButton}>
+                      <View style={styles.radio}>
+                        {radioButtonCalibre == 110 ? (
+                          <View style={styles.radioBg}></View>
+                        ) : null}
+                      </View>
+                      <Text>110</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
             <View style={styles.containerButtonsModal}>
               <Button title="Guardar" onPress={clickGuardar} />
@@ -283,9 +376,9 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
               />
             </View>
           </View>
- 
-        <View>
-        <View style={styles.modal}>
+
+          <View>
+            <View style={styles.modal}>
               <Text style={styles.tituloModal}>Liberacion pallets</Text>
             </View>
             <View style={styles.contenedorLiberacionPallet}>
@@ -341,7 +434,6 @@ export default function SettingPalletLimon(props: modalLimonTypes) {
                 onPress={liberarPallet}
                 disabled={readyToBeFree()}
               />
-       
             </View>
           </View>
         </View>
