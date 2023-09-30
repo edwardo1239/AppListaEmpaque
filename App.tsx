@@ -58,7 +58,7 @@ function App(): JSX.Element {
         const response = await responseJSON.json();
 
         //link = response.listaEmpaque;
-        link = response.listaEmpaque;
+        link = response.listaEmpaqueDev;
       } catch (e) {
         Alert.alert('Error obteniendo los links' + e);
       }
@@ -96,10 +96,12 @@ function App(): JSX.Element {
     try {
       const jsonValue: any = await AsyncStorage.getItem('contenedores');
       const contenedoresCerrar = await JSON.parse(jsonValue);
+      console.log(contenedoresCerrar[numeroContenedor])
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
           action: 'cerrarContenedor',
+          numeroContenedor: numeroContenedor,
           contenedor: contenedoresCerrar[numeroContenedor],
         }),
         headers: {
@@ -168,7 +170,7 @@ function App(): JSX.Element {
 
         <View style={styles.viewPallets}>
           <View><Pallets /></View>
-          <View style={{height:600}}>
+          <View style={{height:600,minWidth:400}}>
           <Informacion />
           </View>
         </View>

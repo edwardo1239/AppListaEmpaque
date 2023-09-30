@@ -175,10 +175,16 @@ export default function Footer() {
       let intModalPallet:number = parseInt(entradaModalPallet)
       let intModalCajas:number = parseInt(entradaModalCajas)
       let [enf, index] = seleccionado.split("/")
-      if( intModalPallet <= 0 || intModalPallet > Object.keys(contenedores[numeroContenedor]).length -1) return Alert.alert("Ingrese un numero de pallet correcto");
+      if( intModalPallet < 0 || intModalPallet > Object.keys(contenedores[numeroContenedor]).length -1) return Alert.alert("Ingrese un numero de pallet correcto");
       if( intModalCajas > contenedores[numeroContenedor][pallet][enf][index][1] || intModalCajas <= 0) return Alert.alert("Ingrese un numero de cajas correcto");
-      let newContenedor = moverCajas(contenedores, numeroContenedor, pallet, seleccionado, entradaModalPallet, intModalCajas);
-      setContenedores(newContenedor)
+      if( intModalPallet == 0){
+        let newCajasSinPallet = moverCajas(contenedores, numeroContenedor, pallet, seleccionado, entradaModalPallet, cajasSinPallet, intModalCajas);
+        setCajasSinPallet(newCajasSinPallet)
+        console.log(newCajasSinPallet)
+      } else{
+        let newContenedor = moverCajas(contenedores, numeroContenedor, pallet, seleccionado, entradaModalPallet, cajasSinPallet, intModalCajas);
+        setContenedores(newContenedor)
+      }
       setOpenModal(false)
       setEntradaModalCajas('')
       setEntradaModalPallet('')

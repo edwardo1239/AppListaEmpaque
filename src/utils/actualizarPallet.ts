@@ -18,6 +18,9 @@ export default function actualizarPallet(contenedores:any, numeroContenedor:stri
     let flag:boolean = true //si la bandera es true es que sexistia un vector con los mismos datos y se agrego el numero de cajas
     let cajas:number = 0 
 
+        if(!contenedores[numeroContenedor]['infoContenedor'].hasOwnProperty('fechaInicio')){
+          contenedores[numeroContenedor]['infoContenedor']['fechaInicio'] = new Date();
+        }
 
         if (!contenedores[numeroContenedor][pallet].hasOwnProperty(loteActual.enf)) 
         {

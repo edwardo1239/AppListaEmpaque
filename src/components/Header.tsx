@@ -73,7 +73,7 @@ export default function Header(props:headerType): JSX.Element {
     let flagCerrarContenedor = true
 
     Object.keys(contenedores[numeroContenedor]).map((item) => {
-      if(item !== 'nombreCliente'){
+      if(item !== 'infoContenedor'){
         if(!contenedores[numeroContenedor][item].hasOwnProperty('liberado')){
           flagCerrarContenedor = false
         }
@@ -147,7 +147,7 @@ export default function Header(props:headerType): JSX.Element {
         <Text>{contenedores && contenedores[numeroContenedor] && cajasSinPallet
         &&
         Object.keys(contenedores[numeroContenedor]).reduce((acu:number, item:any) => {
-          if(item === 'config' || item === 'nombreCliente'){}
+          if(item === 'config' || item === 'infoContenedor'){}
           else
            {
            
@@ -194,7 +194,7 @@ export default function Header(props:headerType): JSX.Element {
                 <TouchableOpacity
                   onPress={() => {
                     setCliente(
-                      item + '-' + contenedores[item]['nombreCliente'],
+                      item + '-' + contenedores[item]['infoContenedor']['nombreCliente'],
                     );
                     // props.obtenerContenedor(item);
                     setNumeroContenedor(item);
@@ -204,7 +204,7 @@ export default function Header(props:headerType): JSX.Element {
                   }}>
                   {item != 'config' && (
                     <Text style={styles.textList}>
-                      {item + '-' + contenedores[item]['nombreCliente']}
+                      {item + '-' + contenedores[item]['infoContenedor']['nombreCliente']}
                     </Text>
                   )}
                 </TouchableOpacity>

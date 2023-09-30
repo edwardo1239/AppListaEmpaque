@@ -44,6 +44,7 @@ export default function Pallets() {
   const openPalletSettings = (e: string) => {
     setOpenModal(true);
     setPallet(e);
+    console.log(loteActual)
   };
 
   const openSinPalletSettings = () => {
@@ -119,7 +120,7 @@ export default function Pallets() {
       {numeroContenedor !== '0' &&
         Object.keys(contenedores[numeroContenedor]).map(
           item =>
-            item !== 'nombreCliente' && (
+            item !== 'infoContenedor' && (
               <View style={styles.palletContainer} key={'view' + item}>
                 {contenedores[numeroContenedor][item].hasOwnProperty(
                   'liberado',
