@@ -180,7 +180,7 @@ export default function Footer() {
       if( intModalPallet == 0){
         let newCajasSinPallet = moverCajas(contenedores, numeroContenedor, pallet, seleccionado, entradaModalPallet, cajasSinPallet, intModalCajas);
         setCajasSinPallet(newCajasSinPallet)
-        console.log(newCajasSinPallet)
+
       } else{
         let newContenedor = moverCajas(contenedores, numeroContenedor, pallet, seleccionado, entradaModalPallet, cajasSinPallet, intModalCajas);
         setContenedores(newContenedor)

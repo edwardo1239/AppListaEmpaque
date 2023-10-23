@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View, Image, Alert} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Alert,
+} from 'react-native';
 
 import SettingPalletLimon from '../modals/SettingPalletLimon';
 import SettingPalletNaranja from '../modals/SettingPalletNaranja';
@@ -9,13 +16,12 @@ import {useLoteStore} from '../store/Predios';
 import SettingsCajasSinPalletLimon from '../modals/SettingsCajasSinPalletLimon';
 import SettingsCajasSinPalletNaranja from '../modals/SettingsCajasSinPalletNaranja';
 import {useCajasSinPalletStore} from '../store/Cajas';
-import { contenedoresObj } from '../store/types';
-
+import {contenedoresObj} from '../store/types';
 
 export default function Pallets() {
   const setPallet = useContenedoresStore(state => state.setPallet);
   const setContenedores = useContenedoresStore(state => state.setContenedores);
-  const { contenedores } = useContenedoresStore(state => state);
+  const {contenedores} = useContenedoresStore(state => state);
   const numeroContenedor = useContenedoresStore(
     state => state.numeroContenedor,
   );
@@ -25,15 +31,13 @@ export default function Pallets() {
 
   const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet);
 
-  useEffect(()=>{
-    
-    setRerender(!rerender)},[setContenedores])
-
-   
+  useEffect(() => {
+    setRerender(!rerender);
+  }, [setContenedores]);
 
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [openModalSinPallet, setOpenModalSinPallet] = useState<boolean>(false);
-  const [rerender, setRerender] = useState({})
+  const [rerender, setRerender] = useState({});
   // const [sinPallet, setSinPallet] = useState<string>('0')
 
   const palletPress = (e: string) => {
@@ -44,7 +48,6 @@ export default function Pallets() {
   const openPalletSettings = (e: string) => {
     setOpenModal(true);
     setPallet(e);
-    console.log(loteActual)
   };
 
   const openSinPalletSettings = () => {
@@ -107,7 +110,7 @@ export default function Pallets() {
       estiba;
 
     setContenedores(contenedores);
-    Alert.alert("Guardado con exito")
+    Alert.alert('Guardado con exito');
   };
 
   return (
@@ -142,7 +145,7 @@ export default function Pallets() {
                 ) : (
                   <TouchableOpacity
                     style={
-                      pallet !== '0' && pallet == item
+                      pallet && pallet !== '0' && pallet == item
                         ? styles.palletsPress
                         : styles.palletsButons
                     }
@@ -188,7 +191,7 @@ export default function Pallets() {
       <View style={styles.palletContainer}>
         <TouchableOpacity
           style={
-            pallet !== '0' && pallet === 'sinPallet'
+            pallet && pallet !== '0' && pallet === 'sinPallet'
               ? styles.palletsPress
               : styles.palletsButons
           }
@@ -198,20 +201,20 @@ export default function Pallets() {
             Cajas Sin Pallet
           </Text>
           <Text style={{fontSize: 40, fontWeight: 'bold', marginLeft: 10}}>
-            {cajasSinPallet && Object.keys(cajasSinPallet).reduce(
-              (acu1, item1) =>
-                acu1 +
-                cajasSinPallet[item1].reduce(
-                  (acu2: number, item2: number[]) => acu2 + item2[1],
-                  0,
-                ),
-              0,
-            )}
+            {cajasSinPallet &&
+              Object.keys(cajasSinPallet).reduce(
+                (acu1, item1) =>
+                  acu1 +
+                  cajasSinPallet[item1].reduce(
+                    (acu2: number, item2: number[]) => acu2 + item2[1],
+                    0,
+                  ),
+                0,
+              )}
           </Text>
         </TouchableOpacity>
-        
       </View>
-  
+
       {loteActual.tipoFruta === 'Limon' ? (
         <SettingPalletLimon
           openModal={openModal}
@@ -294,12 +297,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  palletsButonsLiberado:{
+  palletsButonsLiberado: {
     width: 115,
     height: 115,
     backgroundColor: '#FF22',
     margin: 5,
     borderRadius: 10,
-
-  }
+  },
 });

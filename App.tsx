@@ -16,8 +16,11 @@ import Footer from './src/components/Footer';
 import {useContenedoresStore} from './src/store/Contenedores';
 import {useLoteStore} from './src/store/Predios';
 import {useCajasSinPalletStore} from './src/store/Cajas';
-import {contenedoresObj} from './src/store/types';
+import {LoteType, contenedoresObj} from './src/store/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {io} from 'socket.io-client';
+
+const socket = io('ws://192.168.0.168:3001/');
 
 function App(): JSX.Element {
   //storage variables
@@ -32,146 +35,121 @@ function App(): JSX.Element {
   const setNumeroContenedor = useContenedoresStore(
     state => state.setNumeroContenedor,
   );
-  const contenedores = useContenedoresStore(state => state.contenedores);
+  const setPallet = useContenedoresStore(state => state.setPallet);
+  const { contenedores } = useContenedoresStore(state => state);
+  const setSeleccion = useContenedoresStore(state => state.setSeleccion);
 
-  const [url, setUrl] = useState<string>('');
-
-  var link: string = '';
   let contador = 0;
 
   // use Effect que obtiene los ocntenedores de memoria
   useEffect(() => {
-    const funcionFetchContenedores = () => {
-      fetchContenedores();
-      fetchCajasSinPallet();
+    const funcionFetchContenedores = async  () => {
+      await fetchContenedores();
+      await fetchCajasSinPallet();
     };
     funcionFetchContenedores();
+    let numeroContenedores = Object.keys(contenedores);
+    socket.emit('checkContenedoresUpdates', numeroContenedores);
+    socket.emit('obtenerLoteVaciando')
   }, []);
 
-  //use efect con intervalos que obtienen el lote de vaciado actual
+ 
   useEffect(() => {
-    const getLinks = async () => {
-      try {
-        const responseJSON = await fetch(
-          'https://script.google.com/macros/s/AKfycbyxbqQq58evRO8Hp5FE88TJPatYPc03coveFaBc9cFYYIii-j5I1tvxsUOQH7xfJ8KB/exec',
-        );
-        const response = await responseJSON.json();
+    const timeInterval = setInterval(async () => {
+     
+        const jsonValue = await AsyncStorage.getItem('contenedores');
+        const contenedores = jsonValue != null ? JSON.parse(jsonValue) : null;
+        socket.emit('actualizarListaEmpaqueServidor', contenedores)
+      
+    }, 10_000);
 
-        //link = response.listaEmpaque;
-        link = response.listaEmpaqueDev;
-      } catch (e) {
-        Alert.alert('Error obteniendo los links' + e);
-      }
-    };
-
-    const interval = setInterval(async () => {
-      try {
-        contador++;
-        setUrl(link);
-
-        if (link !== '') {
-          const responseJSON = await fetch(link + '?action=predioVaciando');
-          const loteVaciando = await responseJSON.json();
-
-          //console.log(loteVaciando)
-          await setLoteVaciando(loteVaciando);
-        } else {
-          await getLinks();
-        }
-        if (contador >= 120) {
-          setUrl(link);
-          await enviarDataContenedores(link);
-          contador = 0;
-        }
-      } catch (e: any) {
-        console.log(e);
-        Alert.alert(e);
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeInterval); // Limpia el temporizador al desmontar el componente
   }, []);
+
+  socket.on('loteVaciando', (data: any) => {
+    setLoteVaciando(data);
+  });
+
+  socket.on('infoLoteVaciando', (data)=>{
+    setLoteVaciando(data);
+  })
+
+  socket.on('listaEmpaque', data => {
+    setContenedores(data);
+  });
+
+  socket.on('nuevoContenedor', async data => {
+    const jsonValue: any = await AsyncStorage.getItem('contenedores');
+    const contenedoresNuevo = await JSON.parse(jsonValue);
+    const numeroContenedorNuevo: string[] = Object.keys(data);
+    contenedoresNuevo[numeroContenedorNuevo[0]] =
+      data[numeroContenedorNuevo[0]];
+
+    setContenedores(contenedoresNuevo);
+  });
+
+  socket.on('nuevosContenedores', async data => {
+    const jsonValue: any = await AsyncStorage.getItem('contenedores');
+    const contenedoresNuevos = await JSON.parse(jsonValue);
+    const numeroContenedoresNuevo: string[] = Object.keys(data);
+    if(data.hasOwnProperty('status') && data.status === 200){
+      console.log(data.message)
+    }
+    else{
+      numeroContenedoresNuevo.forEach(numero => {
+        contenedoresNuevos[numero] = data[numero];
+      });
+  
+      setContenedores(contenedoresNuevos);
+    }
+
+  });
+
+ 
+  const sincronizarConServidor = async () => {
+    socket.emit('obtenerListaEmpaque');
+  };
 
   const cerrarContenedor = async (numeroContenedor: string) => {
     try {
       const jsonValue: any = await AsyncStorage.getItem('contenedores');
       const contenedoresCerrar = await JSON.parse(jsonValue);
-      console.log(contenedoresCerrar[numeroContenedor])
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'cerrarContenedor',
-          numeroContenedor: numeroContenedor,
-          contenedor: contenedoresCerrar[numeroContenedor],
-        }),
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-      });
-      const responseJson = await response.json();
 
-      console.log(responseJson);
+      socket.emit('cerrarContenedor', numeroContenedor)
 
       delete contenedoresCerrar[numeroContenedor];
+     
+
+      const jsonValue2 = JSON.stringify(contenedoresCerrar);
+      await AsyncStorage.setItem('contenedores', jsonValue2);
 
       setNumeroContenedor('0');
       setContenedores(contenedoresCerrar);
-
-      console.log(contenedoresCerrar);
+      setPallet('0')
+      setSeleccion('')
+      
+      
+      
     } catch (e) {
       console.error(e);
     }
   };
 
-  const sincronizarConServidor = async () => {
-    let newContenedorJSON = await fetch(url + '?action=listaEmpaque');
-    let newContenedor = await newContenedorJSON.json();
-    //console.log(newContenedor)
-    setContenedores(newContenedor);
-  };
-
-  const enviarDataContenedores = async (url:string) => {
-    const jsonValuex: any = await AsyncStorage.getItem('contenedores');
-    const contenedoresOut = await JSON.parse(jsonValuex);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'actualizar',
-        contenedores: contenedoresOut,
-      }),
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-    });
-    const responseJson = await response.json();
-
-    if (responseJson === 'Listas de empaque actualizadas') {
-      console.log('Listas de empaque actualizadas');
-      Alert.alert('Guardado con exito');
-    } else {
-      let key: any = Object.keys(responseJson);
-      contenedoresOut[key[0]] = responseJson[key[0]];
-
-      console.log(responseJson);
-      setContenedores(contenedoresOut);
-    }
-  };
-
   return (
     <ScrollView>
-      <SafeAreaView style={styles.container} >
+      <SafeAreaView style={styles.container}>
         <Header
           cerrarContenedor={cerrarContenedor}
           sincronizarConServidor={sincronizarConServidor}
-          enviarDataContenedores={enviarDataContenedores}
-          url={url}
+          url={''}
         />
 
         <View style={styles.viewPallets}>
-          <View><Pallets /></View>
-          <View style={{height:600,minWidth:400}}>
-          <Informacion />
+          <View>
+            <Pallets />
+          </View>
+          <View style={{height: 600, minWidth: 400}}>
+            <Informacion />
           </View>
         </View>
 

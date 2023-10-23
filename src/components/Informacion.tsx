@@ -72,7 +72,7 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
       :
 
       <ScrollView style={styles.scrollStyle} nestedScrollEnabled={true}>
-      {pallet !== '0'  &&
+      {contenedores[numeroContenedor] && pallet !== '0' === true ?
         Object.keys(
           contenedores[numeroContenedor][pallet],
         ).map(
@@ -121,7 +121,7 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
                 </View>
       
             ),
-        )}
+        ): null}
     </ScrollView>
    
 

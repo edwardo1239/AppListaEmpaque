@@ -14,11 +14,11 @@ import {
 import { useContenedoresStore } from '../store/Contenedores'; 
 import { useLoteStore } from '../store/Predios';
 import { useCajasSinPalletStore } from '../store/Cajas';
+import { contenedorType } from '../store/types';
 
 type headerType = {
   cerrarContenedor: (numeroContenedor:string) => void
   sincronizarConServidor: () => void
-  enviarDataContenedores: (url:string) => void
   url:string
 }
 
@@ -50,7 +50,6 @@ export default function Header(props:headerType): JSX.Element {
 
   const obtenerGuardarInfo = async () =>{
     setLoteActual(loteVaciando)
-    await props.enviarDataContenedores(props.url)
   }
 
   const clickOpenConfirmacion = (e:string) =>{
