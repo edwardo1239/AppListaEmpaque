@@ -47,12 +47,14 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
                 {cajasSinPallet[item].map((elementoActual:any, index:number )=> (
                       <TouchableOpacity key={elementoActual +'touchable'}  style={(seleccion == item+'/'+index) ? styles.touchablePress : styles.touchable} onPress={() => setSeleccion(item+"/"+index)}>
                       <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view1'}>
-                        <Text>No. Cajas:  </Text>
+                        <Text>{contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? 
+                                  'No. Cajas:' : 'No. Sacos'}  </Text>
                         <Text key={elementoActual + item + 'noCajas'}>{elementoActual[1]}</Text>
                       </View>
                       <View style={{display:'flex',flexDirection:'row',gap:20}} key={elementoActual+item+'view2'}>
                         <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view3'}>
-                          <Text>Tipo Caja:  </Text>
+                          <Text>{contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? 
+                                  'Tipo Caja:' : 'Tipo Saco:' } </Text>
                           <Text key={elementoActual+item+'tipoCaja'}>{elementoActual[2]}</Text>
                         </View>
                         <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view4'}>
@@ -72,7 +74,7 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
       :
 
       <ScrollView style={styles.scrollStyle} nestedScrollEnabled={true}>
-      {contenedores[numeroContenedor] && pallet !== '0' === true ?
+      {contenedores && contenedores[numeroContenedor] && pallet !== '0' === true ?
         Object.keys(
           contenedores[numeroContenedor][pallet],
         ).map(
@@ -99,12 +101,14 @@ const cajasSinPallet = useCajasSinPalletStore(state => state.CajasSinPallet)
                   {contenedores[numeroContenedor][pallet][item].map((elementoActual:any, index:number )=> (
                     <TouchableOpacity key={elementoActual +'touchable'} style={(seleccion == item+'/'+index) ? styles.touchablePress : styles.touchable}  onPress={() => setSeleccion(item+"/"+index)}>
                       <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view1'}>
-                        <Text>No. Cajas:  </Text>
+                        <Text>{contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? 
+                                  'No. Cajas:' : 'No. Sacos'}   </Text>
                         <Text key={elementoActual + item + 'noCajas'}>{elementoActual[1]}</Text>
                       </View>
                       <View style={{display:'flex',flexDirection:'row',gap:20}} key={elementoActual+item+'view2'}>
                         <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view3'}>
-                          <Text>Tipo Caja:  </Text>
+                          <Text>{contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? 
+                                  'Tipo Caja:' : 'Tipo Saco:'}  </Text>
                           <Text key={elementoActual+item+'tipoCaja'}>{elementoActual[2]}</Text>
                         </View>
                         <View style={{display:'flex',flexDirection:'row'}} key={elementoActual+item+'view4'}>

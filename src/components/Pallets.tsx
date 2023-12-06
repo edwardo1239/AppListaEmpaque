@@ -16,9 +16,18 @@ import {useLoteStore} from '../store/Predios';
 import SettingsCajasSinPalletLimon from '../modals/SettingsCajasSinPalletLimon';
 import SettingsCajasSinPalletNaranja from '../modals/SettingsCajasSinPalletNaranja';
 import {useCajasSinPalletStore} from '../store/Cajas';
-import {contenedoresObj} from '../store/types';
+import {contenedoresObj, uploadServerType} from '../store/types';
+import SettingsEstibaLimon from '../modals/SettingsEstibaLimon';
+import SettingsEstibaNaranja from '../modals/SettingsEstibaNaranja';
+import SettingSacosSinEstibaLimon from '../modals/SettingSacoSinEstibaLimon';
+import SettingSacosSinEstibaNaranja from '../modals/SettingSacoSinEstibaNaranja';
 
-export default function Pallets() {
+type propsType = {
+  uploadServer: (data:uploadServerType) => void;
+  uploadLoteServer: (data:uploadServerType) => void
+};
+
+export default function Pallets(props: propsType) {
   const setPallet = useContenedoresStore(state => state.setPallet);
   const setContenedores = useContenedoresStore(state => state.setContenedores);
   const {contenedores} = useContenedoresStore(state => state);
@@ -69,6 +78,14 @@ export default function Pallets() {
     radioButtonCalibre: number,
   ): void => {
     let contenedoresTemp: any = contenedores;
+    if (
+      contenedores[numeroContenedor].infoContenedor.tipoFruta !==
+        loteActual.tipoFruta &&
+      contenedores[numeroContenedor].infoContenedor.tipoFruta !== 'Mixto'
+    )
+      return Alert.alert(
+        'El tipo de fruta no es el mismo que el del contenedor',
+      );
     if (!contenedoresTemp[numeroContenedor].hasOwnProperty('settings')) {
       contenedoresTemp[numeroContenedor][pallet]['settings'] = {};
     }
@@ -79,8 +96,10 @@ export default function Pallets() {
     contenedoresTemp[numeroContenedor][pallet]['settings']['calibre'] =
       radioButtonCalibre;
 
+  
     setContenedores(contenedoresTemp);
     setOpenModal(false);
+    props.uploadServer({caja:0,tipoCaja:''});
   };
 
   const guardarLiberacion = (
@@ -110,6 +129,7 @@ export default function Pallets() {
       estiba;
 
     setContenedores(contenedores);
+    props.uploadServer({caja:0,tipoCaja:''});
     Alert.alert('Guardado con exito');
   };
 
@@ -182,7 +202,14 @@ export default function Pallets() {
                   </TouchableOpacity>
                 )}
                 <Text style={styles.fonts} key={'pallet' + item}>
-                  Pallet {item}
+                  {contenedores[numeroContenedor].infoContenedor.tipoEmpaque ===
+                  'Caja'
+                    ? 'Pallet'
+                    : contenedores[numeroContenedor].infoContenedor
+                        .tipoEmpaque === 'Saco'
+                    ? 'Estiba'
+                    : null}{' '}
+                  {item}
                 </Text>
               </View>
             ),
@@ -198,7 +225,10 @@ export default function Pallets() {
           onPress={() => palletPress('sinPallet')}
           onLongPress={() => openSinPalletSettings()}>
           <Text style={{marginLeft: 8, fontWeight: '500'}}>
-            Cajas Sin Pallet
+            { contenedores && contenedores[numeroContenedor] &&
+            contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja'
+              ? 'Cajas Sin Pallet'
+              : 'Sacos sin estiba'}
           </Text>
           <Text style={{fontSize: 40, fontWeight: 'bold', marginLeft: 10}}>
             {cajasSinPallet &&
@@ -216,14 +246,32 @@ export default function Pallets() {
       </View>
 
       {loteActual.tipoFruta === 'Limon' ? (
-        <SettingPalletLimon
+        contenedores[numeroContenedor] &&
+        contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? (
+          <SettingPalletLimon
+            openModal={openModal}
+            guardarSettings={guardarSettings}
+            closeModal={closeModal}
+            guardarLiberacion={guardarLiberacion}
+          />
+        ) : (
+          <SettingsEstibaLimon
+            openModal={openModal}
+            guardarSettings={guardarSettings}
+            closeModal={closeModal}
+            guardarLiberacion={guardarLiberacion}
+          />
+        )
+      ) :contenedores && contenedores[numeroContenedor] &&
+        contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? (
+        <SettingPalletNaranja
           openModal={openModal}
           guardarSettings={guardarSettings}
           closeModal={closeModal}
           guardarLiberacion={guardarLiberacion}
         />
       ) : (
-        <SettingPalletNaranja
+        <SettingsEstibaNaranja
           openModal={openModal}
           guardarSettings={guardarSettings}
           closeModal={closeModal}
@@ -232,12 +280,29 @@ export default function Pallets() {
       )}
 
       {loteActual.tipoFruta === 'Limon' ? (
-        <SettingsCajasSinPalletLimon
+        contenedores[numeroContenedor] &&
+        contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? (
+          <SettingsCajasSinPalletLimon
+            openModalSinPallet={openModalSinPallet}
+            closeModalSinPallet={closeModalSinPallet}
+            uploadLoteServer={props.uploadLoteServer}
+
+          />
+        ) : (
+          <SettingSacosSinEstibaLimon
+            openModalSinPallet={openModalSinPallet}
+            closeModalSinPallet={closeModalSinPallet}
+          />
+        )
+      ) : contenedores && contenedores[numeroContenedor] &&
+        contenedores[numeroContenedor].infoContenedor.tipoEmpaque === 'Caja' ? (
+        <SettingsCajasSinPalletNaranja
           openModalSinPallet={openModalSinPallet}
           closeModalSinPallet={closeModalSinPallet}
+          uploadLoteServer={props.uploadLoteServer}
         />
       ) : (
-        <SettingsCajasSinPalletNaranja
+        <SettingSacosSinEstibaNaranja
           openModalSinPallet={openModalSinPallet}
           closeModalSinPallet={closeModalSinPallet}
         />

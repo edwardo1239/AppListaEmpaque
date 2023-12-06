@@ -62,6 +62,7 @@ export default function (
 
     ////si es otro pallet
   } else {
+    console.log(nuevoPallet)
     if (
       !contenedor[numeroContenedor][nuevoPallet].hasOwnProperty('cajasTotal')
     ) {

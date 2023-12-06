@@ -8,7 +8,6 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 
-import _ from 'lodash';
 import Header from './src/components/Header';
 import Pallets from './src/components/Pallets';
 import Informacion from './src/components/Informacion';
@@ -16,11 +15,11 @@ import Footer from './src/components/Footer';
 import {useContenedoresStore} from './src/store/Contenedores';
 import {useLoteStore} from './src/store/Predios';
 import {useCajasSinPalletStore} from './src/store/Cajas';
-import {LoteType, contenedoresObj} from './src/store/types';
+import {LoteType, contenedoresObj, serverResponse, uploadServerType} from './src/store/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {io} from 'socket.io-client';
 
-const socket = io('ws://192.168.0.168:3001/');
+const socket = io('http://192.168.0.172:3001/');
 
 function App(): JSX.Element {
   //storage variables
@@ -36,78 +35,107 @@ function App(): JSX.Element {
     state => state.setNumeroContenedor,
   );
   const setPallet = useContenedoresStore(state => state.setPallet);
-  const { contenedores } = useContenedoresStore(state => state);
+  const {contenedores} = useContenedoresStore(state => state);
   const setSeleccion = useContenedoresStore(state => state.setSeleccion);
-
-  let contador = 0;
+  const numeroContenedor = useContenedoresStore(state => state.numeroContenedor);
+  const pallet = useContenedoresStore(state => state.pallet);
 
   // use Effect que obtiene los ocntenedores de memoria
   useEffect(() => {
-    const funcionFetchContenedores = async  () => {
+    socket.on('connect_error', function (err) {
+      Alert.alert(`connect_error due to ${err.message}`);
+      console.log(`connect_error due to ${err.message}`);
+    });
+    const funcionFetchContenedores = async () => {
       await fetchContenedores();
       await fetchCajasSinPallet();
     };
     funcionFetchContenedores();
-    let numeroContenedores = Object.keys(contenedores);
-    socket.emit('checkContenedoresUpdates', numeroContenedores);
-    socket.emit('obtenerLoteVaciando')
   }, []);
 
- 
+  //useefffect que crea los eventos con el servidor
   useEffect(() => {
-    const timeInterval = setInterval(async () => {
-     
-        const jsonValue = await AsyncStorage.getItem('contenedores');
-        const contenedores = jsonValue != null ? JSON.parse(jsonValue) : null;
-        socket.emit('actualizarListaEmpaqueServidor', contenedores)
-      
-    }, 10_000);
+    const fnAsync = async () => {
+      socket.on('loteVaciando', (data: any) => {
+        console.log(data);
+        setLoteVaciando({
+          enf: data.enf,
+          nombreLote: data.nombreLote,
+          tipoFruta: data.tipoFruta,
+        });
+      });
 
-    return () => clearTimeout(timeInterval); // Limpia el temporizador al desmontar el componente
+      //OBTENER ENF
+      const requestENF = {data: {action: 'obtenerLoteVaciando'}, id: socket.id};
+      const response: serverResponse = await new Promise((resolve, reject) => {
+        socket.emit(
+          'listaDeEmpaque',
+          requestENF,
+          (serverResponse: serverResponse) => {
+            if (serverResponse.status === 200) {
+              resolve(serverResponse);
+            } else {
+              resolve({status: 400, data: {}});
+            }
+          },
+        );
+      });
+      if (response.status === 200) {
+        setLoteVaciando({
+          enf: response.data.enf,
+          nombreLote: response.data.nombreLote,
+          tipoFruta: response.data.tipoFruta,
+        });
+      } else {
+        Alert.alert(
+          `${response.status} Error obteniendo Lote: ${response.data}`,
+        );
+      }
+      //OBTENER CONTENEDORES
+      const requestListaEmpaque = {
+        data: {action: 'obtenerListaEmpaque'},
+        id: socket.id,
+      };
+      const responseListaEmpaque: serverResponse = await new Promise(
+        (resolve, reject) => {
+          socket.emit(
+            'listaDeEmpaque',
+            requestListaEmpaque,
+            (serverResponse: serverResponse) => {
+              if (serverResponse.status === 200) {
+                resolve(serverResponse);
+              } else {
+                resolve({status: 400, data: {}});
+              }
+            },
+          );
+        },
+      );
+      if (responseListaEmpaque.status === 200) {
+        setContenedores(responseListaEmpaque.data);
+      } else {
+        Alert.alert(
+          `${responseListaEmpaque.status} Error obteniendo Lote: ${responseListaEmpaque.data}`,
+        );
+      }
+
+      socket.on('nuevoContenedorToApp', async data => {
+        console.log(data);
+        const jsonValue: any = await AsyncStorage.getItem('contenedores');
+        const contenedoresNuevo = await JSON.parse(jsonValue);
+        const numeroContenedorNuevo: string[] = Object.keys(data);
+        contenedoresNuevo[numeroContenedorNuevo[0]] =
+          data[numeroContenedorNuevo[0]];
+
+        setContenedores(contenedoresNuevo);
+      });
+
+    };
+    fnAsync();
   }, []);
 
-  socket.on('loteVaciando', (data: any) => {
-    setLoteVaciando(data);
-  });
-
-  socket.on('infoLoteVaciando', (data)=>{
-    setLoteVaciando(data);
-  })
-
-  socket.on('listaEmpaque', data => {
-    setContenedores(data);
-  });
-
-  socket.on('nuevoContenedor', async data => {
-    const jsonValue: any = await AsyncStorage.getItem('contenedores');
-    const contenedoresNuevo = await JSON.parse(jsonValue);
-    const numeroContenedorNuevo: string[] = Object.keys(data);
-    contenedoresNuevo[numeroContenedorNuevo[0]] =
-      data[numeroContenedorNuevo[0]];
-
-    setContenedores(contenedoresNuevo);
-  });
-
-  socket.on('nuevosContenedores', async data => {
-    const jsonValue: any = await AsyncStorage.getItem('contenedores');
-    const contenedoresNuevos = await JSON.parse(jsonValue);
-    const numeroContenedoresNuevo: string[] = Object.keys(data);
-    if(data.hasOwnProperty('status') && data.status === 200){
-      console.log(data.message)
-    }
-    else{
-      numeroContenedoresNuevo.forEach(numero => {
-        contenedoresNuevos[numero] = data[numero];
-      });
-  
-      setContenedores(contenedoresNuevos);
-    }
-
-  });
-
- 
   const sincronizarConServidor = async () => {
-    socket.emit('obtenerListaEmpaque');
+      console.log("funcion pendiente")
   };
 
   const cerrarContenedor = async (numeroContenedor: string) => {
@@ -115,25 +143,70 @@ function App(): JSX.Element {
       const jsonValue: any = await AsyncStorage.getItem('contenedores');
       const contenedoresCerrar = await JSON.parse(jsonValue);
 
-      socket.emit('cerrarContenedor', numeroContenedor)
+      const requestData = {action:'cerrarContenedor', numeroContenedor:numeroContenedor}
+      const request = {data:requestData, id:socket.id}
+      socket.emit('listaDeEmpaque', request, (serverResponse:serverResponse) =>{
+        if(serverResponse.status === 200){
+          Alert.alert("Contenedor cerrado con exito")
+        }else{
+          Alert.alert("ERROR AL CERRAR CONTENEDOR")
+        }
+      })
 
       delete contenedoresCerrar[numeroContenedor];
-     
 
       const jsonValue2 = JSON.stringify(contenedoresCerrar);
       await AsyncStorage.setItem('contenedores', jsonValue2);
 
       setNumeroContenedor('0');
       setContenedores(contenedoresCerrar);
-      setPallet('0')
-      setSeleccion('')
-      
-      
-      
+      setPallet('0');
+      setSeleccion('');
     } catch (e) {
       console.error(e);
     }
   };
+
+  const uploadServer = async (data:uploadServerType) => {
+    try {
+      const requestData = {action:'uploadInfo', 
+                            pallet:contenedores[numeroContenedor][pallet], 
+                            numeroContenedor:numeroContenedor, 
+                            numeroPallet:pallet, 
+                            dataIngreso:data}
+
+      const request = {data:requestData, id:socket.id}
+      socket.emit('listaDeEmpaque', request, (serverResponse:serverResponse) =>{
+        console.log(serverResponse)
+      })
+    } catch (e) {
+      Alert.alert('Error subiendo los datos');
+    }
+  };
+
+  const uploadContenedor = async () =>{
+    try {
+      const requestData = {action:'uploadContenedor', contenedor:contenedores[numeroContenedor], numeroContenedor:numeroContenedor}
+      const request = {data:requestData, id:socket.id}
+      socket.emit('listaDeEmpaque', request, (serverResponse:serverResponse) =>{
+        console.log(serverResponse)
+      })
+    } catch (e) {
+      Alert.alert('Error subiendo los datos');
+    }
+  };
+
+  const uploadLoteServer = async (data:uploadServerType) => {
+    try{
+      const requestData = {action:'uploadLote', tipoCaja:data.tipoCaja, cajasTotal:data.caja }
+      const request = {data:requestData, id:socket.id}
+      socket.emit('listaDeEmpaque', request, (serverResponse:serverResponse) =>{
+        console.log(serverResponse)
+      })
+    } catch (e:any) {
+      Alert.alert(`${e.name}: ${e.message}`)
+    }
+  }
 
   return (
     <ScrollView>
@@ -141,19 +214,18 @@ function App(): JSX.Element {
         <Header
           cerrarContenedor={cerrarContenedor}
           sincronizarConServidor={sincronizarConServidor}
-          url={''}
         />
 
         <View style={styles.viewPallets}>
           <View>
-            <Pallets />
+            <Pallets uploadServer={uploadServer} uploadLoteServer={uploadLoteServer}/>
           </View>
           <View style={{height: 600, minWidth: 400}}>
             <Informacion />
           </View>
         </View>
 
-        <Footer />
+        <Footer uploadServer={uploadServer} uploadContenedor={uploadContenedor}/>
       </SafeAreaView>
     </ScrollView>
   );

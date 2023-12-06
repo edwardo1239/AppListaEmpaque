@@ -15,10 +15,13 @@ import {useContenedoresStore} from '../store/Contenedores';
 import { useCajasSinPalletStore } from '../store/Cajas';
 import { useLoteStore } from '../store/Predios';
 import  guardarCajasSinPallet  from '../utils/GuardarCajasSinPallet';
+import { uploadServerType } from '../store/types';
 
 type modalTypes = {
     openModalSinPallet: boolean
     closeModalSinPallet: (e:boolean) => void
+    uploadLoteServer: (data:uploadServerType) => void
+
 }
 
 export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
@@ -60,7 +63,7 @@ export default function SettingsCajasSinPalletNaranja(props: modalTypes) {
         setCajasSinPallet(newCajasSinPallet)
 
 
-
+        props.uploadLoteServer({caja:cajasInt, tipoCaja:radioButtonTipoCaja})
         setCajas('');
         setRadioButtonTipoCaja('');
         setRadioButtonCalidad(0);

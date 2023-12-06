@@ -19,7 +19,6 @@ import { contenedorType } from '../store/types';
 type headerType = {
   cerrarContenedor: (numeroContenedor:string) => void
   sincronizarConServidor: () => void
-  url:string
 }
 
 export default function Header(props:headerType): JSX.Element {

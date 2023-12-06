@@ -24,8 +24,10 @@ export const useContenedoresStore = create<State>((set, get) => {
     seleccion:'',
 
     fetchContenedores: async () => {
+    
       const jsonValue = await AsyncStorage.getItem('contenedores');
-      const contenedores = jsonValue != null ? JSON.parse(jsonValue) : null;
+      let asd = {}
+      const contenedores = jsonValue != null ? JSON.parse(jsonValue) : await AsyncStorage.setItem('contenedores', JSON.stringify(asd));
 
       set({contenedores})
     },

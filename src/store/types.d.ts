@@ -14,8 +14,14 @@ export interface CajasSinPalletType {
 
 interface contenedorType {
   [key: string]: pallet;
-  config: string;
-  Version: string;
+  infoContenedor: infoContenedorType;
+}
+
+interface infoContenedorType {
+  nombreCliente: String
+  tipoFruta:string
+  tipoEmpaque:'Caja'|'Saco'
+  fechaInicio: Date
 }
 
 interface pallet {
@@ -32,3 +38,12 @@ interface settings {
 
 type CustomArray = (string | number | Date)[];
 
+export type serverResponse = {
+  status:number
+  data:any
+}
+
+export type uploadServerType = {
+  caja:number
+  tipoCaja:string
+}
